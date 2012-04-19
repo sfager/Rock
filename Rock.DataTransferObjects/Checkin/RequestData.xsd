@@ -1,0 +1,90 @@
+﻿  <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:tns="http://tempuri.org/RequestDataSchema.xsd"
+           targetNamespace="http://tempuri.org/RequestDataSchema.xsd"
+           elementFormDefault="qualified">
+    
+    <xs:element name="RequestData" type="tns:RequestDataType"/>
+
+    <!-- Root Data Bundle -->
+    <xs:complexType name="RequestDataType">
+      <xs:sequence>
+        <xs:element name="Kiosk" type="tns:Kiosk" maxOccurs="1"/>
+        <xs:element name="SearchValue" type="xs:string"></xs:element>
+        <xs:element name="Family" type="tns:Family" maxOccurs="unbounded" minOccurs="0"></xs:element>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Kiosk">
+      <xs:sequence>
+        <xs:element name="EventType" type="tns:EventType" maxOccurs="unbounded" minOccurs="0"></xs:element>
+        <xs:element name="Room" type="tns:Room" maxOccurs="unbounded" minOccurs="0"></xs:element>
+        <xs:element name="Printer" type="tns:Printer"></xs:element>
+      </xs:sequence>
+      <xs:attribute name ="Mode" type="xs:int"></xs:attribute>
+      <xs:attribute name="Latitude" type="xs:double"></xs:attribute>
+      <xs:attribute name="Longitude" type="xs:double"></xs:attribute>
+      <xs:attribute name="IPAddress" type="xs:string"></xs:attribute>
+    </xs:complexType>
+    
+    <xs:complexType name="Person">
+    </xs:complexType>
+
+    <xs:complexType name="Printer">
+    </xs:complexType>
+
+    <xs:complexType name="Room">
+      <xs:attribute name="IsOpen" type="xs:boolean"></xs:attribute>
+    </xs:complexType>
+  
+    <xs:complexType name="PosibleEvents">
+      <xs:sequence>
+        <xs:element name="EventType" type="tns:EventType" maxOccurs="1"></xs:element>
+        <xs:element name="Room" type="tns:Room" maxOccurs="1"></xs:element>
+        <xs:element name="Errors" type="tns:Error" maxOccurs="unbounded" minOccurs="0"></xs:element>
+      </xs:sequence>
+      <xs:attribute name="IsActive" type="xs:boolean"></xs:attribute>
+      <xs:attribute name="IsDisabled" type="xs:boolean"></xs:attribute>
+      <xs:attribute name="StartTime" type="xs:dateTime"></xs:attribute>
+      <xs:attribute name="CanCheckIn" type="xs:boolean"></xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="CheckedInEvents">
+      <xs:sequence>
+        <xs:element name="EventType" type="tns:EventType" maxOccurs="1"></xs:element>
+        <xs:element name="Room" type="tns:Room" maxOccurs="1"></xs:element>
+        <xs:element name="Errors" type="tns:Error" maxOccurs="unbounded" minOccurs="0"></xs:element>
+      </xs:sequence>
+      <xs:attribute name="StartTime" type="xs:dateTime"></xs:attribute>
+      <xs:attribute name="IsCheckedIn" type="xs:boolean"></xs:attribute>
+      <xs:attribute name="IsActive" type="xs:boolean"></xs:attribute>
+      <xs:attribute name="HasErrors" type="xs:boolean"></xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="EventType">
+      <xs:attribute name="Name" type="xs:string"></xs:attribute>
+      <xs:attribute name="Ministry-Category" type="xs:string"></xs:attribute>
+      <xs:attribute name="UseLoadBalancing" type="xs:boolean"></xs:attribute>
+      <xs:attribute name="LoadBalancingType" type="xs:int"></xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="CheckinPerson">
+      <xs:sequence>
+          <xs:element name="Person" type="tns:Person" minOccurs="1" maxOccurs="1"/>
+          <xs:element name="PossibleEvents" type="tns:PosibleEvents" maxOccurs="unbounded" minOccurs="0"></xs:element>
+          <xs:element name="CheckedInEvents" type="tns:CheckedInEvents" maxOccurs="unbounded" minOccurs="0"></xs:element>
+      </xs:sequence>
+      <xs:attribute name="IsAllowedToCheckIn" type="xs:boolean" ></xs:attribute>
+    </xs:complexType>
+  
+    <xs:complexType name="Family" >
+      <xs:sequence>
+        <xs:element name="CheckinPerson" type="tns:CheckinPerson" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="Error" >
+      <xs:attribute name="Code" type="xs:int"></xs:attribute>
+      <xs:attribute name="Message" type="xs:string"></xs:attribute>
+    </xs:complexType>
+  
+  </xs:schema>

@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 
-namespace Rock.DataTransferObjects.Checkin
+namespace Rock.Checkin.DTO
 {
 	/// <summary>
 	/// This represents the main datagram of a checkin request.  It's the object
@@ -16,7 +16,7 @@ namespace Rock.DataTransferObjects.Checkin
 	/// and over to the client for displaying (as appropriate) for the entire
 	/// set of check-in steps being performed.
 	/// </summary>
-	public class RequestData
+	public class RequestData2
 	{
 		/// <summary>
 		/// The kiosk that is performing the checkin operation.
@@ -88,7 +88,7 @@ namespace Rock.DataTransferObjects.Checkin
 	/// if this is going to extend the "Group" or just be a simplified
 	/// representation (more concrete) of the family unit.
 	/// </summary>
-	public class Family : Groups.DTO.Group
+	public class Family : Group
 	{
 		public List<CheckinPerson> CheckinPerson;
 	}
@@ -200,7 +200,7 @@ namespace Rock.DataTransferObjects.Checkin
 		/// Holds the state of the kiosk's Mode. The Mode is used to control 
 		/// behavior of the kiosk.
 		/// </summary>
-		public KioskMode Mode; 
+		public KioskMode Mode;
 		public double Latitude = 0.0;
 		public double Longitude = 0.0;
 		public IPAddress IpAddress = null;

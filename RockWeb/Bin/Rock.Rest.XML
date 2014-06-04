@@ -1,0 +1,1327 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Rock.Rest</name>
+    </assembly>
+    <members>
+        <member name="M:Rock.Rest.ApiController`1.GetDataView(System.Int32)">
+            <summary>
+            Gets a list of objects represented by the selected data view
+            </summary>
+            <param name="id">The id.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Rest.ApiController`1.GetPerson">
+            <summary>
+            Gets the peron alias.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:Rock.Rest.ApiController`1.Service">
+            <summary>
+            Gets or sets the service.
+            </summary>
+            <value>
+            The service.
+            </value>
+        </member>
+        <member name="T:Rock.Rest.Controllers.CommunicationRecipientActivitiesController">
+            <summary>
+            CommunicationRecipientActivities REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.CommunicationTemplatesController">
+            <summary>
+            CommunicationTemplates REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.FollowingsController">
+            <summary>
+            Followings REST API
+            </summary>
+            <summary>
+            Followings REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.IHasCustomRoutes">
+            <summary>
+            Interface for controllers that need to add additional routes beyond the default 
+            api/{controller}/{id} route.
+            </summary>
+        </member>
+        <member name="M:Rock.Rest.Controllers.FollowingsController.AddRoutes(System.Web.Routing.RouteCollection)">
+            <summary>
+            Adds the routes.
+            </summary>
+            <param name="routes">The routes.</param>
+        </member>
+        <member name="M:Rock.Rest.Controllers.FollowingsController.Delete(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Deletes the following record(s).
+            </summary>
+            <param name="entityTypeId">The entity type identifier.</param>
+            <param name="entityId">The entity identifier.</param>
+            <param name="personId">The person identifier.</param>
+        </member>
+        <member name="T:Rock.Rest.Controllers.MetricCategoriesController">
+            <summary>
+            MetricCategories REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.PageViewsController">
+            <summary>
+            PageViews REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.PluginMigrationsController">
+            <summary>
+            PluginMigrations REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.ExceptionLogsController">
+            <summary>
+            ExceptionLogs REST API
+            </summary>
+            <summary>
+            ExceptionLogs REST API
+            </summary>
+        </member>
+        <member name="M:Rock.Rest.Controllers.ExceptionLogsController.GetChartData">
+            <summary>
+            Gets the exceptions grouped by date.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Rock.Rest.Controllers.ExceptionLogsController.ExceptionChartData">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.MetricValuesController">
+            <summary>
+            
+            </summary>
+            <summary>
+            MetricValues REST API
+            </summary>
+        </member>
+        <member name="M:Rock.Rest.Controllers.MetricValuesController.AddRoutes(System.Web.Routing.RouteCollection)">
+            <summary>
+            Adds the routes.
+            </summary>
+            <param name="routes">The routes.</param>
+        </member>
+        <member name="M:Rock.Rest.Controllers.MetricValuesController.GetByMetricId(System.Int32,System.Nullable{Rock.Model.MetricValueType})">
+            <summary>
+            Gets the by metric identifier.
+            </summary>
+            <param name="metricId">The metric identifier.</param>
+            <param name="metricValueType">Type of the metric value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Rest.Controllers.MetricValuesController.GetSummary(System.String,System.Nullable{System.DateTime},System.Nullable{System.DateTime},System.Nullable{Rock.Model.MetricValueType})">
+            <summary>
+            Gets the summary.
+            </summary>
+            <param name="metricIdList">The metric identifier list.</param>
+            <param name="startDate">The start date.</param>
+            <param name="endDate">The end date.</param>
+            <param name="metricValueType">Type of the metric value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Rest.Controllers.MetricValuesController.GetSeriesName(System.Int32,System.Int32)">
+            <summary>
+            Gets the name of the series.
+            </summary>
+            <param name="metricId">The metric identifier.</param>
+            <param name="seriesId">The series identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="T:Rock.Rest.Controllers.MetricValuesController.MetricSummary">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.WorkflowActionFormAttributesController">
+            <summary>
+            WorkflowActionFormAttributes REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.WorkflowActionFormsController">
+            <summary>
+            WorkflowActionForms REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.PersonBadgesController">
+            <summary>
+            
+            </summary>
+            <summary>
+            PersonBadges REST API
+            </summary>
+        </member>
+        <member name="M:Rock.Rest.Controllers.PersonBadgesController.AddRoutes(System.Web.Routing.RouteCollection)">
+            <summary>
+            Adds the routes.
+            </summary>
+            <param name="routes">The routes.</param>
+        </member>
+        <member name="M:Rock.Rest.Controllers.PersonBadgesController.GetInGroupOfType(System.Int32,System.Guid)">
+            <summary>
+            Gets the attendance summary data for the 24 month attenance badge 
+            </summary>
+            <param name="personId">The person id.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Rest.Controllers.PersonBadgesController.GetWeeksAttendedInDuration(System.Int32,System.Int32)">
+            <summary>
+            Gets the attendance summary data for the 24 month attenance badge 
+            </summary>
+            <param name="personId">The person id.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Rest.Controllers.PersonBadgesController.GetLastVisitOnSite(System.Int32,System.Int32)">
+            <summary>
+            Gets the attendance summary data for the 24 month attenance badge 
+            </summary>
+            <param name="personId">The person id.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Rest.Controllers.PersonBadgesController.GetFamilyAttendance(System.Int32,System.Int32)">
+            <summary>
+            Gets the attendance summary data for the 24 month attenance badge 
+            </summary>
+            <param name="personId">The person id.</param>
+            <returns></returns>
+        </member>
+        <member name="T:Rock.Rest.Controllers.PersonBadgesController.GroupOfTypeResult">
+            <summary>
+            Result set for group of type badge
+            </summary>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonBadgesController.GroupOfTypeResult.GroupTypeId">
+            <summary>
+            Gets or sets the group type id of the group.
+            </summary>
+            <value>
+            The group type id.
+            </value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonBadgesController.GroupOfTypeResult.GroupTypeName">
+            <summary>
+            Gets or sets the group type name.
+            </summary>
+            <value>
+            The group type name.
+            </value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonBadgesController.GroupOfTypeResult.GroupTypeIconCss">
+            <summary>
+            Gets or sets the group type icon css.
+            </summary>
+            <value>
+            The group type icon css.
+            </value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonBadgesController.GroupOfTypeResult.PersonId">
+            <summary>
+            Gets or sets the person id of the individual.
+            </summary>
+            <value>
+            The person id.
+            </value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonBadgesController.GroupOfTypeResult.NickName">
+            <summary>
+            Gets or sets the person nick name of the individual.
+            </summary>
+            <value>
+            The nick name.
+            </value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonBadgesController.GroupOfTypeResult.LastName">
+            <summary>
+            Gets or sets the person last name of the individual.
+            </summary>
+            <value>
+            The last name.
+            </value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonBadgesController.GroupOfTypeResult.PersonInGroup">
+            <summary>
+            Gets or sets whether the given person is in a group of this type.
+            </summary>
+            <value>
+            Whether the person is in a group of this type.
+            </value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonBadgesController.GroupOfTypeResult.GroupList">
+            <summary>
+            Gets or sets a list of groups the person is in.
+            </summary>
+            <value>List of groups that the person is in.</value>
+        </member>
+        <member name="T:Rock.Rest.Controllers.PersonBadgesController.GroupSummary">
+            <summary>
+            Summary of a group for use in the group of type result
+            </summary>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonBadgesController.GroupSummary.GroupId">
+            <summary>
+            Gets or sets the group id of the group.
+            </summary>
+            <value>
+            The group type id.
+            </value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonBadgesController.GroupSummary.GroupName">
+            <summary>
+            Gets or sets the group name.
+            </summary>
+            <value>
+            The group type name.
+            </value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonBadgesController.GroupSummary.RoleName">
+            <summary>
+            Gets or sets the group member role name.
+            </summary>
+            <value>
+            The group member role name.
+            </value>
+        </member>
+        <member name="T:Rock.Rest.Controllers.PersonBadgesController.MonthlyAttendanceSummary">
+            <summary>
+            Monthly attendance summary structure
+            </summary>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonBadgesController.MonthlyAttendanceSummary.AttendanceCount">
+            <summary>
+            Gets or sets the number of times the unit attended.
+            </summary>
+            <value>
+            The number of attendances.
+            </value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonBadgesController.MonthlyAttendanceSummary.SundaysInMonth">
+            <summary>
+            Gets or sets the number of Sundays in the month
+            </summary>
+            <value>
+            The number of Sundays.
+            </value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonBadgesController.MonthlyAttendanceSummary.Month">
+            <summary>
+            Gets or sets the month.
+            </summary>
+            <value>
+            The month of the attendance.
+            </value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonBadgesController.MonthlyAttendanceSummary.Year">
+            <summary>
+            Gets or sets the year.
+            </summary>
+            <value>The year.</value>
+        </member>
+        <member name="T:Rock.Rest.Controllers.AuthController">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Rock.Rest.Controllers.AuthController.AddRoutes(System.Web.Routing.RouteCollection)">
+            <summary>
+            Adds the routes.
+            </summary>
+            <param name="routes">The routes.</param>
+        </member>
+        <member name="M:Rock.Rest.Controllers.AuthController.Login(Rock.Security.LoginParameters)">
+            <summary>
+            Use this to Login a user and return an AuthCookie which can be used in subsequent REST calls
+            </summary>
+            <param name="loginParameters">The login parameters.</param>
+            <exception cref="T:System.Web.Http.HttpResponseException"></exception>
+        </member>
+        <member name="T:Rock.Rest.Controllers.CategoriesController">
+            <summary>
+            
+            </summary>
+            <summary>
+            Categories REST API
+            </summary>
+        </member>
+        <member name="M:Rock.Rest.Controllers.CategoriesController.AddRoutes(System.Web.Routing.RouteCollection)">
+            <summary>
+            Adds the routes.
+            </summary>
+            <param name="routes">The routes.</param>
+        </member>
+        <member name="M:Rock.Rest.Controllers.CategoriesController.GetChildren(System.Int32,System.Boolean,System.Int32,System.String,System.String,System.Boolean,System.Boolean)">
+            <summary>
+            Gets the children.
+            </summary>
+            <param name="id">The identifier.</param>
+            <param name="getCategorizedItems">if set to <c>true</c> [get categorized items].</param>
+            <param name="entityTypeId">The entity type identifier.</param>
+            <param name="entityQualifier">The entity qualifier.</param>
+            <param name="entityQualifierValue">The entity qualifier value.</param>
+            <param name="showUnnamedEntityItems">if set to <c>true</c> [show unnamed entity items].</param>
+            <param name="showCategoriesThatHaveNoChildren">if set to <c>true</c> [show categories that have no children].</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Rest.Controllers.CategoriesController.GetCategorizedItems(Rock.Data.IService,System.Int32,System.Boolean)">
+            <summary>
+            Gets the categorized items.
+            </summary>
+            <param name="serviceInstance">The service instance.</param>
+            <param name="categoryId">The category id.</param>
+            <param name="showUnnamedEntityItems">if set to <c>true</c> [show unnamed entity items].</param>
+            <returns></returns>
+        </member>
+        <member name="T:Rock.Rest.Controllers.CategoryItem">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Rock.Rest.Controllers.CategoryItem.IsCategory">
+            <summary>
+            Gets or sets a value indicating whether this instance is category.
+            </summary>
+            <value>
+            <c>true</c> if this instance is category; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="T:Rock.Rest.Controllers.AttendanceCodesController">
+            <summary>
+            AttendanceCodes REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.AuditDetailsController">
+            <summary>
+            AuditDetails REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.BinaryFileDatasController">
+            <summary>
+            BinaryFileDatas REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.BinaryFileTypesController">
+            <summary>
+            BinaryFileTypes REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.CommunicationRecipientsController">
+            <summary>
+            CommunicationRecipients REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.CommunicationsController">
+            <summary>
+            Communications REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.DataViewFiltersController">
+            <summary>
+            DataViewFilters REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.DataViewsController">
+            <summary>
+            DataViews REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.FinancialAccountsController">
+            <summary>
+            FinancialAccounts REST API
+            </summary>
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Rock.Rest.Controllers.FinancialAccountsController.AddRoutes(System.Web.Routing.RouteCollection)">
+            <summary>
+            Adds the routes.
+            </summary>
+            <param name="routes">The routes.</param>
+        </member>
+        <member name="T:Rock.Rest.Controllers.FinancialPersonBankAccountsController">
+            <summary>
+            FinancialPersonBankAccounts REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.FinancialPersonSavedAccountsController">
+            <summary>
+            FinancialPersonSavedAccounts REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.FinancialPledgesController">
+            <summary>
+            FinancialPledges REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.FinancialScheduledTransactionDetailsController">
+            <summary>
+            FinancialScheduledTransactionDetails REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.FinancialScheduledTransactionsController">
+            <summary>
+            FinancialScheduledTransactions REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.FinancialTransactionImagesController">
+            <summary>
+            FinancialTransactionImages REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.FinancialTransactionRefundsController">
+            <summary>
+            FinancialTransactionRefunds REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.FinancialTransactionScannedChecksController">
+            <summary>
+            FinancialTransactionScannedChecks REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.GroupTypeRolesController">
+            <summary>
+            GroupTypeRoles REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.HistoriesController">
+            <summary>
+            Histories REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.LayoutsController">
+            <summary>
+            Layouts REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.NotesController">
+            <summary>
+            Notes REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.NoteTypesController">
+            <summary>
+            NoteTypes REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.PersonAliasController">
+            <summary>
+            PersonAlias REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.PrayerRequestsController">
+            <summary>
+            PrayerRequests REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.ReportFieldsController">
+            <summary>
+            ReportFields REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.ReportsController">
+            <summary>
+            Reports REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.RestActionsController">
+            <summary>
+            RestActions REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.RestControllersController">
+            <summary>
+            RestControllers REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.FileBrowserController">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Rock.Rest.Controllers.FileBrowserController.AddRoutes(System.Web.Routing.RouteCollection)">
+            <summary>
+            Adds the routes.
+            </summary>
+            <param name="routes">The routes.</param>
+        </member>
+        <member name="M:Rock.Rest.Controllers.FileBrowserController.GetFileThumbnail(System.String,System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Gets the file thumbnail
+            </summary>
+            <param name="relativeFilePath">The relative file path.</param>
+            <param name="width">The width.</param>
+            <param name="height">The height.</param>
+            <returns></returns>
+            <example>
+              <![CDATA[ <img src='api/FileBrowser/GetFileThumbnail?relativeFilePath=External+Site%5cMarketing%5cFunnyCat.gif&width=100&height=100 ]]>
+            </example>
+        </member>
+        <member name="M:Rock.Rest.Controllers.FileBrowserController.ResizeAndSendImage(System.Nullable{System.Int32},System.Nullable{System.Int32},System.String)">
+            <summary>
+            Resizes the and send image.
+            </summary>
+            <param name="width">The width.</param>
+            <param name="height">The height.</param>
+            <param name="fullPath">The full path.</param>
+            <returns></returns>
+        </member>
+        <member name="T:Rock.Rest.Controllers.MergeFieldsController">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Rock.Rest.Controllers.MergeFieldsController.AddRoutes(System.Web.Routing.RouteCollection)">
+            <summary>
+            Adds the routes.
+            </summary>
+            <param name="routes">The routes.</param>
+        </member>
+        <member name="T:Rock.Rest.Controllers.GroupsController">
+            <summary>
+            
+            </summary>
+            <summary>
+            Groups REST API
+            </summary>
+        </member>
+        <member name="M:Rock.Rest.Controllers.GroupsController.AddRoutes(System.Web.Routing.RouteCollection)">
+            <summary>
+            Adds the routes.
+            </summary>
+            <param name="routes">The routes.</param>
+        </member>
+        <member name="M:Rock.Rest.Controllers.GroupsController.GetChildren(System.Int32,System.Int32,System.Boolean,System.String)">
+            <summary>
+            Gets the children.
+            </summary>
+            <param name="id">The id.</param>
+            <param name="rootGroupId">The root group id.</param>
+            <param name="limitToSecurityRoleGroups">if set to <c>true</c> [limit to security role groups].</param>
+            <param name="groupTypeIds">The group type ids.</param>
+            <returns></returns>
+        </member>
+        <member name="T:Rock.Rest.Controllers.AttributesController">
+            <summary>
+            Attributes REST API
+            </summary>
+            <summary>
+            Attributes REST API
+            </summary>
+        </member>
+        <member name="M:Rock.Rest.Controllers.AttributesController.AddRoutes(System.Web.Routing.RouteCollection)">
+            <summary>
+            Add Custom route for flushing cached attributes
+            </summary>
+            <param name="routes"></param>
+        </member>
+        <member name="M:Rock.Rest.Controllers.AttributesController.Flush(System.Int32)">
+            <summary>
+            Flushes an attributes from cache.
+            </summary>
+        </member>
+        <member name="M:Rock.Rest.Controllers.AttributesController.Flush">
+            <summary>
+            Flushes all global attributes from cache.
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.BlocksController">
+            <summary>
+            Blocks REST API
+            </summary>
+            <summary>
+            Blocks REST API
+            </summary>
+        </member>
+        <member name="M:Rock.Rest.Controllers.BlocksController.AddRoutes(System.Web.Routing.RouteCollection)">
+            <summary>
+            Add Custom route needed for block move
+            </summary>
+            <param name="routes"></param>
+        </member>
+        <member name="M:Rock.Rest.Controllers.BlocksController.Delete(System.Int32)">
+            <summary>
+            Deletes the specified Block with extra logic to flush caches.
+            </summary>
+            <param name="id">The identifier.</param>
+        </member>
+        <member name="M:Rock.Rest.Controllers.BlocksController.Move(System.Int32,Rock.Model.Block)">
+            <summary>
+            Moves a block from one zone to another
+            </summary>
+            <param name="block"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Rock.Rest.Controllers.AttendancesController">
+            <summary>
+            Attendances REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.DevicesController">
+            <summary>
+            Devices REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.GroupLocationsController">
+            <summary>
+            GroupLocations REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.SchedulesController">
+            <summary>
+            Schedules REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.AttributeQualifiersController">
+            <summary>
+            AttributeQualifiers REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.AttributeValuesController">
+            <summary>
+            AttributeValues REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.AuditsController">
+            <summary>
+            Audits REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.AuthsController">
+            <summary>
+            Auths REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.BinaryFilesController">
+            <summary>
+            BinaryFiles REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.BlockTypesController">
+            <summary>
+            BlockTypes REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.CampusController">
+            <summary>
+            Campus REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.DefinedTypesController">
+            <summary>
+            DefinedTypes REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.DefinedValuesController">
+            <summary>
+            DefinedValues REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.SystemEmailsController">
+            <summary>
+            SystemEmails REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.EntityTypesController">
+            <summary>
+            EntityTypes REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.FieldTypesController">
+            <summary>
+            FieldTypes REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.FinancialBatchesController">
+            <summary>
+            FinancialBatches REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.FinancialTransactionDetailsController">
+            <summary>
+            FinancialTransactionDetails REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.FinancialTransactionsController">
+            <summary>
+            FinancialTransactions REST API
+            </summary>
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Rock.Rest.Controllers.FinancialTransactionsController.AddRoutes(System.Web.Routing.RouteCollection)">
+            <summary>
+            Adds the routes.
+            </summary>
+            <param name="routes">The routes.</param>
+        </member>
+        <member name="M:Rock.Rest.Controllers.FinancialTransactionsController.PostScanned(Rock.Model.FinancialTransactionScannedCheck)">
+            <summary>
+            Posts the scanned.
+            </summary>
+            <param name="financialTransaction">The financial transaction.</param>
+            <param name="checkMicr">The check micr.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Rest.Controllers.FinancialTransactionsController.GetContributionPersonGroupAddress(Rock.Net.RestParameters.ContributionStatementOptions)">
+            <summary>
+            Gets the contribution person group address.
+            </summary>
+            <param name="options">The options.</param>
+            <returns></returns>
+            <exception cref="T:System.Web.Http.HttpResponseException">
+            </exception>
+        </member>
+        <member name="M:Rock.Rest.Controllers.FinancialTransactionsController.GetContributionTransactions(System.Int32,Rock.Net.RestParameters.ContributionStatementOptions)">
+            <summary>
+            Gets the contribution transactions.
+            </summary>
+            <param name="groupId">The group unique identifier.</param>
+            <param name="options">The options.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Rest.Controllers.FinancialTransactionsController.GetContributionTransactions(System.Int32,System.Nullable{System.Int32},Rock.Net.RestParameters.ContributionStatementOptions)">
+            <summary>
+            Gets the contribution transactions.
+            </summary>
+            <param name="personId">The person unique identifier.</param>
+            <param name="groupId">The group unique identifier.</param>
+            <param name="options">The options.</param>
+            <returns></returns>
+            <exception cref="T:System.Web.Http.HttpResponseException"></exception>
+        </member>
+        <member name="T:Rock.Rest.Controllers.GroupMembersController">
+            <summary>
+            GroupMembers REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.GroupTypesController">
+            <summary>
+            GroupTypes REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.HtmlContentsController">
+            <summary>
+            HtmlContents REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.LocationsController">
+            <summary>
+            Locations REST API
+            </summary>
+            <summary>
+            Locations REST API
+            </summary>
+        </member>
+        <member name="M:Rock.Rest.Controllers.LocationsController.AddRoutes(System.Web.Routing.RouteCollection)">
+            <summary>
+            Add custom routes needed for geocoding and standardization
+            </summary>
+            <param name="routes"></param>
+        </member>
+        <member name="M:Rock.Rest.Controllers.LocationsController.Verify(Rock.Model.Location)">
+            <summary>
+            Geocode an location
+            </summary>
+            <param name="location"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Rest.Controllers.LocationsController.GetChildren(System.Int32,System.Int32)">
+            <summary>
+            Gets the children.
+            </summary>
+            <param name="id">The unique identifier.</param>
+            <param name="rootLocationId">The root location unique identifier.</param>
+            <returns></returns>
+            <exception cref="T:System.Web.Http.HttpResponseException"></exception>
+        </member>
+        <member name="T:Rock.Rest.Controllers.MarketingCampaignAdsController">
+            <summary>
+            MarketingCampaignAds REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.MarketingCampaignAdTypesController">
+            <summary>
+            MarketingCampaignAdTypes REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.MarketingCampaignAudiencesController">
+            <summary>
+            MarketingCampaignAudiences REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.MarketingCampaignCampusController">
+            <summary>
+            MarketingCampaignCampus REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.MarketingCampaignsController">
+            <summary>
+            MarketingCampaigns REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.MetricsController">
+            <summary>
+            Metrics REST API
+            </summary>
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Rock.Rest.Controllers.MetricsController.AddRoutes(System.Web.Routing.RouteCollection)">
+            <summary>
+            Adds the routes.
+            </summary>
+            <param name="routes">The routes.</param>
+        </member>
+        <member name="M:Rock.Rest.Controllers.MetricsController.GetHtmlForBlock(System.Int32,System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Gets the HTML for block.
+            </summary>
+            <param name="blockId">The block identifier.</param>
+            <param name="entityTypeId">The entity type identifier.</param>
+            <param name="entityId">The entity identifier.</param>
+            <returns></returns>
+        </member>
+        <member name="T:Rock.Rest.Controllers.PageContextsController">
+            <summary>
+            PageContexts REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.PageRoutesController">
+            <summary>
+            PageRoutes REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.PagesController">
+            <summary>
+            Pages REST API
+            </summary>
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Rock.Rest.Controllers.PagesController.AddRoutes(System.Web.Routing.RouteCollection)">
+            <summary>
+            Adds the routes.
+            </summary>
+            <param name="routes">The routes.</param>
+        </member>
+        <member name="M:Rock.Rest.Controllers.PagesController.GetChildren(System.Int32,System.String)">
+            <summary>
+            Gets the children.
+            </summary>
+            <param name="id">The id.</param>
+            <param name="hidePageIds">List of pages that should not be included in results</param>
+            <returns></returns>
+        </member>
+        <member name="T:Rock.Rest.Controllers.PeopleController">
+            <summary>
+            People REST API
+            </summary>
+             <summary>
+            
+             </summary>
+        </member>
+        <member name="M:Rock.Rest.Controllers.PeopleController.AddRoutes(System.Web.Routing.RouteCollection)">
+            <summary>
+            Adds the routes.
+            </summary>
+            <param name="routes">The routes.</param>
+        </member>
+        <member name="M:Rock.Rest.Controllers.PeopleController.Search(System.String)">
+            <summary>
+            Searches the specified name.
+            </summary>
+            <param name="name">The name.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Rest.Controllers.PeopleController.Search(System.String,System.Boolean)">
+            <summary>
+            Searches the specified name.
+            </summary>
+            <param name="name">The name.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Rest.Controllers.PeopleController.GetByEmail(System.String)">
+            <summary>
+            Searches the person entit(ies) by email.
+            </summary>
+            <param name="email">The email.</param>
+            <returns></returns>
+            <exception cref="T:System.Web.Http.HttpResponseException"></exception>
+        </member>
+        <member name="M:Rock.Rest.Controllers.PeopleController.GetByPhoneNumber(System.String)">
+            <summary>
+            Searches the person entit(ies) by phone number.
+            </summary>
+            <param name="number">The phone number.</param>
+            <returns></returns>
+            <exception cref="T:System.Web.Http.HttpResponseException"></exception>
+        </member>
+        <member name="M:Rock.Rest.Controllers.PeopleController.GetByUserName(System.String)">
+            <summary>
+            Gets the name of the by user.
+            </summary>
+            <param name="username">The username.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Rest.Controllers.PeopleController.GetByPersonAliasId(System.Int32)">
+            <summary>
+            Gets the Person by person alias identifier.
+            </summary>
+            <param name="personAliasId">The person alias identifier.</param>
+            <returns></returns>
+            <exception cref="T:System.Web.Http.HttpResponseException"></exception>
+        </member>
+        <member name="M:Rock.Rest.Controllers.PeopleController.GetPopupHtml(System.Int32)">
+            <summary>
+            Gets the popup html for the selected person
+            </summary>
+            <param name="personId">The person id.</param>
+            <returns></returns>
+        </member>
+        <member name="T:Rock.Rest.Controllers.PersonViewedsController">
+            <summary>
+            PersonVieweds REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.PhoneNumbersController">
+            <summary>
+            PhoneNumbers REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.ServiceJobsController">
+            <summary>
+            ServiceJobs REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.ServiceLogsController">
+            <summary>
+            ServiceLogs REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.SiteDomainsController">
+            <summary>
+            SiteDomains REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.SitesController">
+            <summary>
+            Sites REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.TaggedItemsController">
+            <summary>
+            TaggedItems REST API
+            </summary>
+            <summary>
+            TaggedItems REST API
+            </summary>
+        </member>
+        <member name="M:Rock.Rest.Controllers.TaggedItemsController.AddRoutes(System.Web.Routing.RouteCollection)">
+            <summary>
+            Add Custom route for flushing cached attributes
+            </summary>
+            <param name="routes"></param>
+        </member>
+        <member name="M:Rock.Rest.Controllers.TaggedItemsController.Post(System.Int32,System.Int32,System.Guid,System.String)">
+            <summary>
+            Posts the specified entity type identifier.
+            </summary>
+            <param name="entityTypeId">The entity type identifier.</param>
+            <param name="ownerId">The owner identifier.</param>
+            <param name="entityGuid">The entity unique identifier.</param>
+            <param name="name">The name.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Rest.Controllers.TaggedItemsController.Post(System.Int32,System.Int32,System.Guid,System.String,System.String)">
+            <summary>
+            Posts the specified entity type identifier.
+            </summary>
+            <param name="entityTypeId">The entity type identifier.</param>
+            <param name="ownerId">The owner identifier.</param>
+            <param name="entityGuid">The entity unique identifier.</param>
+            <param name="name">The name.</param>
+            <param name="entityQualifier">The entity qualifier.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Rest.Controllers.TaggedItemsController.Post(System.Int32,System.Int32,System.Guid,System.String,System.String,System.String)">
+            <summary>
+            Posts the specified entity type identifier.
+            </summary>
+            <param name="entityTypeId">The entity type identifier.</param>
+            <param name="ownerId">The owner identifier.</param>
+            <param name="entityGuid">The entity unique identifier.</param>
+            <param name="name">The name.</param>
+            <param name="entityQualifier">The entity qualifier.</param>
+            <param name="entityQualifierValue">The entity qualifier value.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Rock.Rest.Controllers.TaggedItemsController.Delete(System.Int32,System.Int32,System.Guid,System.String)">
+            <summary>
+            Deletes the specified entity type identifier.
+            </summary>
+            <param name="entityTypeId">The entity type identifier.</param>
+            <param name="ownerId">The owner identifier.</param>
+            <param name="entityGuid">The entity unique identifier.</param>
+            <param name="name">The name.</param>
+        </member>
+        <member name="M:Rock.Rest.Controllers.TaggedItemsController.Delete(System.Int32,System.Int32,System.Guid,System.String,System.String)">
+            <summary>
+            Deletes the specified entity type identifier.
+            </summary>
+            <param name="entityTypeId">The entity type identifier.</param>
+            <param name="ownerId">The owner identifier.</param>
+            <param name="entityGuid">The entity unique identifier.</param>
+            <param name="name">The name.</param>
+            <param name="entityQualifier">The entity qualifier.</param>
+        </member>
+        <member name="M:Rock.Rest.Controllers.TaggedItemsController.Delete(System.Int32,System.Int32,System.Guid,System.String,System.String,System.String)">
+            <summary>
+            Deletes the specified entity type identifier.
+            </summary>
+            <param name="entityTypeId">The entity type identifier.</param>
+            <param name="ownerId">The owner identifier.</param>
+            <param name="entityGuid">The entity unique identifier.</param>
+            <param name="name">The name.</param>
+            <param name="entityQualifier">The entity qualifier.</param>
+            <param name="entityQualifierValue">The entity qualifier value.</param>
+            <exception cref="T:System.Web.Http.HttpResponseException"></exception>
+        </member>
+        <member name="T:Rock.Rest.Controllers.TagsController">
+            <summary>
+            Tags REST API
+            </summary>
+            <summary>
+            TaggedItems REST API
+            </summary>
+        </member>
+        <member name="M:Rock.Rest.Controllers.TagsController.AddRoutes(System.Web.Routing.RouteCollection)">
+            <summary>
+            Add Custom route for flushing cached attributes
+            </summary>
+            <param name="routes"></param>
+        </member>
+        <member name="T:Rock.Rest.Controllers.UserLoginsController">
+            <summary>
+            UserLogins REST API
+            </summary>
+            <summary>
+            Users REST API
+            </summary>
+        </member>
+        <member name="M:Rock.Rest.Controllers.UserLoginsController.Available(System.String)">
+            <summary>
+            Tests if a username is available
+            </summary>
+            <param name="username"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Rock.Rest.Controllers.WorkflowActionsController">
+            <summary>
+            WorkflowActions REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.WorkflowActionTypesController">
+            <summary>
+            WorkflowActionTypes REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.WorkflowActivitiesController">
+            <summary>
+            WorkflowActivities REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.WorkflowActivityTypesController">
+            <summary>
+            WorkflowActivityTypes REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.WorkflowLogsController">
+            <summary>
+            WorkflowLogs REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.WorkflowsController">
+            <summary>
+            Workflows REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.WorkflowTriggersController">
+            <summary>
+            WorkflowTriggers REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.WorkflowTypesController">
+            <summary>
+            WorkflowTypes REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Controllers.PersonSearchResult">
+             <summary>
+            
+             </summary>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonSearchResult.Id">
+            <summary>
+            Gets or sets the id.
+            </summary>
+            <value>
+            The id.
+            </value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonSearchResult.Name">
+            <summary>
+            Gets or sets the full name last first.
+            </summary>
+            <value>
+            The full name last first.
+            </value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonSearchResult.ImageHtmlTag">
+            <summary>
+            Gets or sets the image HTML tag.
+            </summary>
+            <value>
+            The image HTML tag.
+            </value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonSearchResult.Age">
+            <summary>
+            Gets or sets the age.
+            </summary>
+            <value>The age.</value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonSearchResult.Gender">
+            <summary>
+            Gets or sets the gender.
+            </summary>
+            <value>The gender.</value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonSearchResult.ConnectionStatus">
+            <summary>
+            Gets or sets the connection status.
+            </summary>
+            <value>The connection status.</value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonSearchResult.RecordStatus">
+            <summary>
+            Gets or sets the record status.
+            </summary>
+            <value>The member status.</value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonSearchResult.Email">
+            <summary>
+            Gets or sets the email.
+            </summary>
+            <value>
+            The email.
+            </value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonSearchResult.SpouseName">
+            <summary>
+            Gets or sets the name of the spouse.
+            </summary>
+            <value>
+            The name of the spouse.
+            </value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonSearchResult.Address">
+            <summary>
+            Gets or sets the address.
+            </summary>
+            <value>
+            The address.
+            </value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonSearchResult.IsActive">
+            <summary>
+            Gets or sets a value indicating whether this instance is active.
+            </summary>
+            <value>
+              <c>true</c> if this instance is active; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.PersonSearchResult.PickerItemDetailsHtml">
+            <summary>
+            Gets or sets the picker item details HTML.
+            </summary>
+            <value>
+            The picker item details HTML.
+            </value>
+        </member>
+        <member name="T:Rock.Controllers.SearchController">
+            <summary>
+            Search REST API
+            </summary>
+        </member>
+        <member name="T:Rock.Rest.Filters.SecuredAttribute">
+            <summary>
+            Checks to see if the Logged-In person has authorization View (HttpMethod: GET) or Edit (all other HttpMethods) for the RestController and Controller's associated EntityType
+            </summary>
+        </member>
+        <member name="M:Rock.Rest.Filters.SecuredAttribute.OnActionExecuting(System.Web.Http.Controllers.HttpActionContext)">
+            <summary>
+            Occurs before the action method is invoked.
+            </summary>
+            <param name="actionContext">The action context.</param>
+        </member>
+        <member name="T:Rock.Rest.Filters.ValidateAttribute">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:Rock.Rest.Filters.ValidateAttribute.OnActionExecuting(System.Web.Http.Controllers.HttpActionContext)">
+            <summary>
+            Occurs before the action method is invoked.
+            </summary>
+            <param name="actionContext">The action context.</param>
+        </member>
+        <member name="T:Rock.Rest.Controllers.MetricYTDData">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Rock.Rest.Controllers.MetricYTDData.LastValue">
+            <summary>
+            Gets or sets the last value.
+            </summary>
+            <value>
+            The last value.
+            </value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.MetricYTDData.LastValueDate">
+            <summary>
+            Gets or sets the last value date.
+            </summary>
+            <value>
+            The last value date.
+            </value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.MetricYTDData.CumulativeValue">
+            <summary>
+            Gets or sets the cumulative value.
+            </summary>
+            <value>
+            The cumulative value.
+            </value>
+        </member>
+        <member name="P:Rock.Rest.Controllers.MetricYTDData.GoalValue">
+            <summary>
+            Gets or sets the goal value.
+            </summary>
+            <value>
+            The goal value.
+            </value>
+        </member>
+    </members>
+</doc>

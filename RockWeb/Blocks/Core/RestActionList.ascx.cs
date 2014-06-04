@@ -17,7 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Web.Http;
+using System.Web.Http.Description;
 using System.Web.UI;
 using Rock;
 using Rock.Attribute;
@@ -52,7 +55,7 @@ namespace RockWeb.Blocks.Administration
             gActions.Actions.ShowAdd = false;
             gActions.IsDeleteEnabled = false;
            
-            SecurityField securityField = gActions.Columns[2] as SecurityField;
+            SecurityField securityField = gActions.Columns[3] as SecurityField;
             securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.RestAction ) ).Id;
         }
 
@@ -116,6 +119,19 @@ namespace RockWeb.Blocks.Administration
         /// <param name="itemKeyValue">The item key value.</param>
         public void BindGrid()
         {
+            var config = GlobalConfiguration.Configuration;
+
+            var explorer = config.Services.GetApiExplorer() as ApiExplorer;
+
+
+            var docpath = Path.Combine( AppDomain.CurrentDomain.BaseDirectory, "bin\\Rock.Rest.XML" );
+
+            if ( File.Exists( docpath ) )
+            {
+                explorer.DocumentationProvider = new XmlDocumentationProvider( docpath );
+            }
+            
+            
             int controllerId = int.MinValue;
             if ( int.TryParse( PageParameter( "controller" ), out controllerId ) )
             {
@@ -134,7 +150,13 @@ namespace RockWeb.Blocks.Administration
                     qry = qry.OrderBy( c => c.Method );
                 }
 
-                gActions.DataSource = qry.ToList();
+                gActions.DataSource = qry.ToList().Select( s => new
+                {
+                    Id = s.Id,
+                    Method = s.Method,
+                    Path = s.Path,
+                    Documentation = explorer.ApiDescriptions.FirstOrDefault( a => a.ID == s.ApiId ) != null ? explorer.ApiDescriptions.FirstOrDefault( a => a.ID == s.ApiId ).Documentation : null
+                } ).ToList();
                 gActions.DataBind();
             }
         }

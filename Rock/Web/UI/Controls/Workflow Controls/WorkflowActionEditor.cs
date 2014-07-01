@@ -56,6 +56,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance can edit.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can edit; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanEdit
+        {
+            get
+            {
+                return ViewState["CanEdit"] as bool? ?? false;
+            }
+            set
+            {
+                ViewState["CanEdit"] = value;
+            }
+        }
+        
+        /// <summary>
         /// Gets or sets the validation group.
         /// </summary>
         /// <value>
@@ -95,6 +113,7 @@ namespace Rock.Web.UI.Controls
         /// Sets the workflow action.
         /// </summary>
         /// <param name="action">The value.</param>
+        /// <param name="setValues">if set to <c>true</c> [set values].</param>
         public void SetWorkflowAction( WorkflowAction action, bool setValues = false )
         {
             EnsureChildControls();
@@ -169,6 +188,7 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "grid-select-field" );
             writer.RenderBeginTag( HtmlTextWriterTag.Td );
+            _cbIsActionCompleted.Enabled = CanEdit;
             _cbIsActionCompleted.ValidationGroup = ValidationGroup;
             _cbIsActionCompleted.RenderControl( writer );
             writer.RenderEndTag();

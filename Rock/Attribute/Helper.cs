@@ -78,10 +78,13 @@ namespace Rock.Attribute
                 var contextAttribute = (ContextAwareAttribute)customAttribute;
                 if ( contextAttribute != null && contextAttribute.EntityType == null )
                 {
-                    string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
-                    properties++;
+                    if ( contextAttribute.IsConfigurable )
+                    {
+                        string propertyKeyName = string.Format( "ContextEntityType{0}", properties > 0 ? properties.ToString() : "" );
+                        properties++;
 
-                    blockProperties.Add( new EntityTypeFieldAttribute( "Entity Type", false, "The type of entity that will provide context for this block", false, "Context", 0, propertyKeyName ) );
+                        blockProperties.Add( new EntityTypeFieldAttribute( "Entity Type", false, "The type of entity that will provide context for this block", false, "Context", 0, propertyKeyName ) );
+                    }
                 }
             }
 
@@ -310,7 +313,14 @@ namespace Rock.Attribute
                     groupTypeIds.Insert(0, groupType.Id );
 
                     // Check for inherited group type id's
-                    groupType = groupType.InheritedGroupType ?? groupTypeService.Get( groupType.InheritedGroupTypeId ?? 0 );
+                    if ( groupType.InheritedGroupTypeId.HasValue )
+                    {
+                        groupType = groupType.InheritedGroupType ?? groupTypeService.Get( groupType.InheritedGroupTypeId ?? 0 );
+                    }
+                    else
+                    {
+                        groupType = null;
+                    }
                 }
 
             }
@@ -334,8 +344,8 @@ namespace Rock.Attribute
             var attributes = new List<Rock.Web.Cache.AttributeCache>();
 
             // Get all the attributes that apply to this entity type and this entity's properties match any attribute qualifiers
-            int? entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityType ).Id;
-            foreach ( Rock.Model.Attribute attribute in attributeService.GetByEntityTypeId( entityTypeId ) )
+            int entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityType ).Id;
+            foreach ( var attribute in attributeService.Queryable().Where( a => a.EntityTypeId == entityTypeId).Select( a => new { a.Id, a.EntityTypeQualifierColumn, a.EntityTypeQualifierValue} ))
             {
                 // group type ids exist (entity is either GroupMember, Group, or GroupType) and qualifier is for a group type id
                 if ( groupTypeIds.Any() && (
@@ -346,7 +356,7 @@ namespace Rock.Attribute
                     int groupTypeIdValue = int.MinValue;
                     if ( int.TryParse( attribute.EntityTypeQualifierValue, out groupTypeIdValue ) && groupTypeIds.Contains( groupTypeIdValue ) )
                     {
-                        inheritedAttributes[groupTypeIdValue].Add( Rock.Web.Cache.AttributeCache.Read( attribute ) );
+                        inheritedAttributes[groupTypeIdValue].Add( Rock.Web.Cache.AttributeCache.Read( attribute.Id ) );
                     }
                 }
                     
@@ -355,7 +365,7 @@ namespace Rock.Attribute
                     ( string.IsNullOrEmpty( attribute.EntityTypeQualifierValue ) ||
                     (properties[attribute.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ) ?? "").ToString() == attribute.EntityTypeQualifierValue ) ) )
                 {
-                    attributes.Add( Rock.Web.Cache.AttributeCache.Read( attribute ) );
+                    attributes.Add( Rock.Web.Cache.AttributeCache.Read( attribute.Id ) );
                 }
             }
 
@@ -385,10 +395,10 @@ namespace Rock.Attribute
 
                 // Read this item's value(s) for each attribute 
                 List<int> attributeIds = allAttributes.Select( a => a.Id ).ToList();
-                foreach ( var attributeValue in attributeValueService.Queryable( "Attribute" )
-                    .Where( v => v.EntityId == entity.Id && attributeIds.Contains( v.AttributeId ) ) )
+                foreach ( var attributeValue in attributeValueService.Queryable()
+                    .Where( v => v.EntityId == entity.Id && attributeIds.Contains( v.AttributeId )) )
                 {
-                    attributeValues[attributeValue.Attribute.Key].Add( attributeValue.Clone( false ) as Rock.Model.AttributeValue );
+                    attributeValues[AttributeCache.Read(attributeValue.AttributeId).Key].Add( attributeValue.Clone( false ) as Rock.Model.AttributeValue );
                 }
 
                 // Look for any attributes that don't have a value and create a default value entry
@@ -932,6 +942,7 @@ namespace Rock.Attribute
         /// <param name="attributeCategories">The attribute categories.</param>
         /// <param name="parentControl">The parent control.</param>
         /// <param name="exclude">The exclude.</param>
+        /// <param name="showHeading">if set to <c>true</c> [show heading].</param>
         public static void AddDisplayControls( IHasAttributes item, List<AttributeCategory> attributeCategories, Control parentControl, List<string> exclude = null, bool showHeading = true )
         {
             foreach ( var attributeCategory in attributeCategories )

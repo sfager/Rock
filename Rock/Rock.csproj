@@ -155,6 +155,7 @@
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\Bing.cs" />
+    <Compile Include="Attribute\CurrencyFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypeGroupFieldAttribute.cs" />
     <Compile Include="Attribute\SecurityRoleFieldAttribute.cs" />
     <Compile Include="Attribute\PersonFieldAttribute.cs" />
@@ -209,6 +210,7 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
+    <Compile Include="Communication\SMTPComponent.cs" />
     <Compile Include="Communication\Transport\MandrillSmtp.cs" />
     <Compile Include="Communication\Transport\Twilio.cs" />
     <Compile Include="Constants\SystemSettingKeys.cs" />
@@ -217,6 +219,7 @@
     <Compile Include="Data\MigrationHelper.cs" />
     <Compile Include="Field\ILinkableFieldType.cs" />
     <Compile Include="Field\IEntityFieldType.cs" />
+    <Compile Include="Field\Types\CurrencyFieldType.cs" />
     <Compile Include="Field\Types\GroupTypeGroupFieldType.cs" />
     <Compile Include="Field\Types\CommunicationTemplateFieldType.cs" />
     <Compile Include="Field\Types\SlidingDateRangeFieldType.cs" />
@@ -400,6 +403,7 @@
     <Compile Include="SystemGuid\Category.cs" />
     <Compile Include="SystemGuid\EntityType.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
+    <Compile Include="Utility\IgnoreUrlEncodedKeyContractResolver.cs" />
     <Compile Include="Web\Cache\PersonBadgeCache.cs" />
     <Compile Include="Web\Cache\CategoryCache.cs" />
     <Compile Include="Web\Cache\RestControllerCache.cs" />
@@ -731,9 +735,11 @@
     <Compile Include="Workflow\Action\AssignActivityToSecurityRole.cs" />
     <Compile Include="Workflow\Action\AssignActivityToPerson.cs" />
     <Compile Include="Workflow\Action\AssignActivityToGroup.cs" />
+    <Compile Include="Workflow\Action\SetAttributeToInitiator.cs" />
     <Compile Include="Workflow\Action\SetAttributeToCurrentPerson.cs" />
     <Compile Include="Workflow\Action\SendEmail.cs" />
     <Compile Include="Workflow\Action\SetAttributeFromEntity.cs" />
+    <Compile Include="Workflow\Action\SetPersonAttributeValue.cs" />
     <Compile Include="Workflow\Action\SetAttributeValue.cs" />
     <Compile Include="Workflow\Action\PersistWorkflow.cs" />
     <Compile Include="Workflow\Action\SetName.cs" />

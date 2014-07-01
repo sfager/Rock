@@ -48,7 +48,6 @@ namespace RockWeb
     /// </summary>
     public class Global : System.Web.HttpApplication
     {
-
         #region Fields
 
         /// <summary>
@@ -92,34 +91,62 @@ namespace RockWeb
         {
             try
             {
+                DateTime startDateTime = RockDateTime.Now;
+
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
                     System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
                 }
 
+                // Temporary code for v1.0.9 to delete payflowpro files in old location (The current update is not able to delete them, but 1.0.9 installs a fix for that)
+                // This should be removed after 1.0.9
+                try
+                {
+                    string physicalFile = System.Web.HttpContext.Current.Server.MapPath( @"~\Plugins\Payflow_dotNET.dll" );
+                    if ( System.IO.File.Exists( physicalFile ) )
+                    {
+                        System.IO.File.Delete( physicalFile );
+                    }
+                    physicalFile = System.Web.HttpContext.Current.Server.MapPath( @"~\Plugins\Rock.PayFlowPro.dll" );
+                    if ( System.IO.File.Exists( physicalFile ) )
+                    {
+                        System.IO.File.Delete( physicalFile );
+                    }
+                }
+                catch
+                {
+                    // Intentionally Blank
+                }
+
+                //// Run any needed Rock and/or plugin migrations
+                //// NOTE: MigrateDatabase must be the first thing that touches the database to help prevent EF from creating empty tables for a new database
+                MigrateDatabase();
+
                 // Get a db context
                 var rockContext = new RockContext();
 
-                RegisterRoutes( rockContext, RouteTable.Routes );
-
-                // Run any needed Rock and/or plugin migrations
-                if (MigrateDatabase())
-                {
-                    // If one or more migrations were run, re-register the routes in case a migration added any new routes
-                    RegisterRoutes( rockContext, RouteTable.Routes );
-                }
-
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
-                    new AttributeService( rockContext ).Get( 0 );
-                    System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - Connected: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+                    try
+                    {
+                        new AttributeService( rockContext ).Get( 0 );
+                        System.Diagnostics.Debug.WriteLine( string.Format( "ConnectToDatabase - {0} ms", ( RockDateTime.Now - startDateTime ).TotalMilliseconds ) );
+                        startDateTime = RockDateTime.Now;
+                    }
+                    catch
+                    {
+                        // Intentionally Blank
+                    }
                 }
+
+                RegisterRoutes( rockContext, RouteTable.Routes );
 
                 // Preload the commonly used objects
                 LoadCacheObjects( rockContext );
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
-                    System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - Done: {0}", RockDateTime.Now.ToString( "hh:mm:ss.FFF" ) ) );
+                    System.Diagnostics.Debug.WriteLine( string.Format( "LoadCacheObjects - {0} ms", ( RockDateTime.Now - startDateTime ).TotalMilliseconds ) );
+                    startDateTime = RockDateTime.Now;
                 }
 
                 // setup and launch the jobs infrastructure if running under IIS
@@ -164,6 +191,8 @@ namespace RockWeb
                 // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
                 AddCallBack();
 
+                GlobalConfiguration.Configuration.EnableCors( new Rock.Rest.EnableCorsFromOriginAttribute() );
+
                 RegisterFilters( GlobalConfiguration.Configuration.Filters );
 
                 Rock.Security.Authorization.Load( rockContext );
@@ -177,7 +206,6 @@ namespace RockWeb
                 MarkOnlineUsersOffline();
 
                 SqlServerTypes.Utilities.LoadNativeAssemblies( Server.MapPath( "~" ) );
-
             }
             catch ( Exception ex )
             {
@@ -367,14 +395,45 @@ namespace RockWeb
                                     if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
                                     {
                                         string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-                                        var recipients = new Dictionary<string, Dictionary<string, object>>();
 
+                                        var recipients = new Dictionary<string, Dictionary<string, object>>();
                                         foreach ( string emailAddress in emailAddresses )
                                         {
                                             recipients.Add( emailAddress, mergeObjects );
                                         }
 
-                                        Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients );
+                                        if ( recipients.Any() )
+                                        {
+                                            bool sendNotification = true;
+
+                                            string filterSettings = globalAttributesCache.GetValue( "EmailExceptionsFilter" );
+                                            var serverVarList = context.Request.ServerVariables;
+
+                                            if ( !string.IsNullOrWhiteSpace( filterSettings ) && serverVarList.Count > 0 )
+                                            {
+                                                string[] nameValues = filterSettings.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                                                foreach ( string nameValue in nameValues )
+                                                {
+                                                    string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                                                    {
+                                                        if ( nameAndValue.Length == 2 )
+                                                        {
+                                                            var serverValue = serverVarList[nameAndValue[0]];
+                                                            if ( serverValue != null && serverValue.ToUpper().Contains( nameAndValue[1].ToUpper().Trim() ) )
+                                                            {
+                                                                sendNotification = false;
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            if ( sendNotification )
+                                            {
+                                                Email.Send( Rock.SystemGuid.SystemEmail.CONFIG_EXCEPTION_NOTIFICATION.AsGuid(), recipients );
+                                            }
+                                        }
                                     }
                                 }
                                 catch
@@ -761,7 +820,7 @@ namespace RockWeb
 
                     qualifiers[attributeQualifier.AttributeId].Add( attributeQualifier.Key, attributeQualifier.Value );
                 }
-                catch (Exception ex)
+                catch ( Exception ex )
                 {
                     LogError( ex, null );
                 }
@@ -781,23 +840,22 @@ namespace RockWeb
 
             // DT: When running with production CCV Data, this is taking a considerable amount of time 
 
-            // Cache all tha Defined Types
+            // Cache all the Defined Types (which will also cache all the definedvalues)
             var definedTypeService = new Rock.Model.DefinedTypeService( rockContext );
-            foreach ( var definedType in definedTypeService.Queryable().ToList() )
+            foreach ( var definedType in definedTypeService.Queryable( "DefinedValues" ).ToList() )
             {
-                Rock.Web.Cache.DefinedTypeCache.Read( definedType );
-            }
-
-            // Cache all the Defined Values
-            var definedValueService = new Rock.Model.DefinedValueService( rockContext );
-            foreach ( var definedValue in definedValueService.Queryable().ToList() )
-            {
-                Rock.Web.Cache.DefinedValueCache.Read( definedValue );
+                Rock.Web.Cache.DefinedTypeCache.Read( definedType, rockContext );
+                foreach (var definedValue in definedType.DefinedValues)
+                {
+                    Rock.Web.Cache.DefinedValueCache.Read( definedValue, rockContext );
+                }
             }
         }
 
         private void Error66( Exception ex )
         {
+            LogError( ex, HttpContext.Current );
+
             if ( HttpContext.Current != null && HttpContext.Current.Session != null )
             {
                 try { HttpContext.Current.Session["Exception"] = ex; } // session may not be available if in RESP API or Http Handler
@@ -887,10 +945,17 @@ namespace RockWeb
                 pageId = pid != null ? int.Parse( pid.ToString() ) : (int?)null;
                 var sid = context.Items["Rock:SiteId"];
                 siteId = sid != null ? int.Parse( sid.ToString() ) : (int?)null;
-                var user = UserLoginService.GetCurrentUser();
-                if ( user != null && user.Person != null )
+                try
                 {
-                    personAlias = user.Person.PrimaryAlias;
+                    var user = UserLoginService.GetCurrentUser();
+                    if ( user != null && user.Person != null )
+                    {
+                        personAlias = user.Person.PrimaryAlias;
+                    }
+                }
+                catch
+                {
+                    // Intentionally left blank
                 }
             }
 

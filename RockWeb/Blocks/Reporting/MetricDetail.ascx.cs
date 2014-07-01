@@ -20,8 +20,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -40,6 +40,10 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Displays the details of the given metric." )]
 
+    [BooleanField( "Show Chart", DefaultValue = "true" )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.CHART_STYLES, "Chart Style" )]
+    [SlidingDateRangeField( "Chart Date Range", Key = "SlidingDateRange", DefaultValue = "-1||||" )]
+    [BooleanField( "Combine Chart Series" )]
     public partial class MetricDetail : RockBlock, IDetailBlock
     {
         #region Base Control Methods
@@ -245,7 +249,7 @@ namespace RockWeb.Blocks.Reporting
                 var selectedCategoryIds = cpMetricCategories.SelectedValuesAsInt();
 
                 // delete any categories that were removed
-                foreach ( var metricCategory in metric.MetricCategories )
+                foreach ( var metricCategory in metric.MetricCategories.ToList() )
                 {
                     if ( !selectedCategoryIds.Contains( metricCategory.CategoryId ) )
                     {
@@ -527,7 +531,10 @@ namespace RockWeb.Blocks.Reporting
             tbDescription.Text = metric.Description;
             tbIconCssClass.Text = metric.IconCssClass;
             cpMetricCategories.SetValues( metric.MetricCategories.Select( a => a.Category ) );
-            ddlSourceType.SetValue( metric.SourceValueTypeId );
+
+            int manualSourceType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
+
+            ddlSourceType.SetValue( metric.SourceValueTypeId ?? manualSourceType );
             tbXAxisLabel.Text = metric.XAxisLabel;
             tbYAxisLabel.Text = metric.YAxisLabel;
             cbIsCumulative.Checked = metric.IsCumulative;
@@ -589,6 +596,15 @@ namespace RockWeb.Blocks.Reporting
         {
             SetEditMode( false );
             hfMetricId.SetValue( metric.Id );
+
+            lcMetricsChart.Visible = GetAttributeValue( "ShowChart" ).AsBooleanOrNull() ?? true;
+            lcMetricsChart.Options.SetChartStyle( GetAttributeValue( "ChartStyle" ).AsGuidOrNull() );
+            var chartDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( "SlidingDateRange" ) ?? "-1||" );
+            lcMetricsChart.StartDate = chartDateRange.Start;
+            lcMetricsChart.EndDate = chartDateRange.End;
+            lcMetricsChart.MetricId = metric.Id;
+            lcMetricsChart.CombineValues = GetAttributeValue( "CombineChartSeries" ).AsBooleanOrNull() ?? false;
+
             lReadOnlyTitle.Text = metric.Title.FormatAsHtmlTitle();
 
             DescriptionList descriptionListMain = new DescriptionList();
@@ -671,7 +687,7 @@ namespace RockWeb.Blocks.Reporting
             }
 
             // limit to EntityTypes that support picking a Value with a picker
-            etpEntityType.EntityTypes = new EntityTypeService( new RockContext() ).GetEntities().OrderBy( t => t.FriendlyName ).Where(a => a.SingleValueFieldTypeId.HasValue).ToList();
+            etpEntityType.EntityTypes = new EntityTypeService( new RockContext() ).GetEntities().OrderBy( t => t.FriendlyName ).Where( a => a.SingleValueFieldTypeId.HasValue ).ToList();
         }
 
         #endregion

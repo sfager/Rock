@@ -6,11 +6,38 @@
 
     const string requiredDotnetVersion = "4.5.1";
     public string redirectPage = string.Empty;
+    public string serverUrl = "http://storage.rockrms.com/install/";
 
     void Page_Load( object sender, EventArgs e )
     {        
         // first disable the no ASP.Net message
         lNoScripting.Visible = false;
+
+        string version = "2_0_0";
+        bool isDebug = false;
+
+        // prepare redirect links
+        redirectPage = "Install.aspx?";
+
+        if ( Request["Version"] != null )
+        {
+            redirectPage += "Version=" + Request["Version"];
+            version = Request["Version"];
+        }
+
+        if ( Request["Debug"] != null )
+        {
+            redirectPage += "&Debug=" + Request["Debug"];
+            isDebug = Convert.ToBoolean( Request["Debug"] );
+        }
+
+        redirectPage = redirectPage.TrimEnd( '?' );
+
+
+        // download files
+        string serverPath = Server.MapPath( "." ) + @"\";
+        string binDirectoryLocation = Server.MapPath( "." ) + @"\bin";
+        serverUrl += version + "/";        
         
         // run initial checks
         // -----------------------------
@@ -52,55 +79,143 @@
         }
         else
         {
-            string version = "2_0_0";
-            bool isDebug = false;
-            
-            // prepare redirect links
-            redirectPage = "Install.aspx?";
-
-            if ( Request["Version"] != null )
-            {
-                redirectPage += "Version=" + Request["Version"];
-                version = Request["Version"];
-            }
-
-            if ( Request["Debug"] != null )
-            {
-                redirectPage += "&Debug=" + Request["Debug"];
-                isDebug = Convert.ToBoolean( Request["Debug"] );
-            }
-
-            redirectPage.TrimEnd( '?' );
-            
-            
-            // download files
-            string serverPath = Server.MapPath( "." );
-            string binDirectoryLocation = Server.MapPath( "." ) + @"\bin";
-            string serverUrl = "http://storage.rockrms.com/" + version;
+            bool downloadSuccessful = true;
             
             try
             {
-                if ( !isDebug )
+                if ( isDebug )
                 {
+                    serverUrl = "/";
+                } else {
                     // create the bin directory
                     if ( !Directory.Exists( binDirectoryLocation ) )
                     {
                         Directory.CreateDirectory( binDirectoryLocation );
                     }
 
-                    // download assembly
-                    WebClient wc = new WebClient();
-                    wc.DownloadFile( serverUrl + @"\Ionic.Zip.dll", binDirectoryLocation + @"\Ionic.Zip.dll" );
+                    // download files
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( "Install.aspx", serverUrl, serverPath );
+                    }
+
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( "InstallController.cs", serverUrl, serverPath );
+                    }
+
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( "Startup.cs", serverUrl, serverPath );
+                    }
+
+                    // signalr bin files
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\Microsoft.AspNet.SignalR.Core.dll", serverUrl, serverPath );
+                    }
+
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\Microsoft.AspNet.SignalR.SystemWeb.dll", serverUrl, serverPath );
+                    }
+
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\Microsoft.Owin.dll", serverUrl, serverPath );
+                    }
+
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\Microsoft.Owin.Host.SystemWeb.dll", serverUrl, serverPath );
+                    }
+
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\Microsoft.Owin.Security.dll", serverUrl, serverPath );
+                    }
+
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\Owin.dll", serverUrl, serverPath );
+                    }
+                    
+                    // other bin files
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\Ionic.Zip.dll", serverUrl, serverPath );
+                    }
+
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\Newtonsoft.Json.dll", serverUrl, serverPath );
+                    }
+
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\Microsoft.ApplicationBlocks.Data.dll", serverUrl, serverPath );
+                    }
+
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\RockInstaller.dll", serverUrl, serverPath );
+                    }
+
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\RockInstallTools.dll", serverUrl, serverPath );
+                    }
+
+                    if ( downloadSuccessful )
+                    {
+                        downloadSuccessful = DownloadFile( @"bin\Subtext.Scripting.dll", serverUrl, serverPath );
+                    }
                 }
                 
             }
-            catch ( Exception ex ) { }
-            
-            
-            
-            pnlRedirect.Visible = true;
+            catch ( Exception ex ) {
+                downloadSuccessful = false;
+            }
+
+            if ( downloadSuccessful )
+            {
+                pnlRedirect.Visible = true;
+            }
         }
     }
+
+    private bool DownloadFile( string filename, string serverUrl, string serverPath )
+    {
+        string nextFileUrl = string.Empty;
+        string nextFilePath = string.Empty;
+
+        try
+        {
+            WebClient wc = new WebClient();
+
+            nextFileUrl = serverUrl + filename;
+            nextFilePath = serverPath + filename;
+            wc.DownloadFile( nextFileUrl, nextFilePath );
+
+            return true;
+        }
+        catch ( Exception ex )
+        {
+            lEnvironmentErrors.Visible = false;
+
+            if ( ex.InnerException != null )
+            {
+                lErrors.Text = String.Format( "<h1>An Error Occurred</h1> <div class='alert alert-danger'><strong>Error:</strong> Could not download the file {0} to {1}. Message: {2}</div>", nextFileUrl, nextFilePath, ex.InnerException.Message );
+            }
+            else
+            {
+                lErrors.Text = String.Format( "<h1>An Error Occurred</h1> <div class='alert alert-danger'><strong>Error:</strong> Could not download the file {0} to {1}. Message: {2}</div>", nextFileUrl, nextFilePath, ex.Message );
+            }
+
+            return false;
+        }
+    }
+    
  </script>
 
 
@@ -109,14 +224,15 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <title>Rock Installer</title>
-    <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css'>
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
-    <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+    <link rel='stylesheet' href='//fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css' />
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" />
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet" />
 
-    <link href="rock-installer.css" rel="stylesheet">
+    <link href="<%=String.Format("{0}Styles/rock-installer.css", serverUrl) %>" rel="stylesheet" />
+    <link rel="shortcut icon" href="<%=String.Format("{0}Images/favicon.ico", serverUrl) %>" />
 
-    <script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
-    <script src="Scripts/rock-install.js"></script>
+    <script src="//code.jquery.com/jquery-1.9.0.min.js"></script>
+    <script src="<%=String.Format("{0}Scripts/rock-install.js", serverUrl) %>"></script>
 </head>
 <body>
     <form id="form1" runat="server">
@@ -162,6 +278,7 @@
                     </p>
                 </asp:Label>
 
+                <asp:Literal ID="lErrors" runat="server"></asp:Literal>
             </div>
         </div>
     </form>
@@ -265,6 +382,7 @@
         else
         {
             result.Message = String.Format( "The server does not have the correct .Net runtime.  You have .Net version {0} Rock requires version {1}.", version, requiredDotnetVersion );
+            result.HelpLink = "http://www.rockrms.com/Rock/LetsFixThis#IncorrectDotNETVersion";
         }
 
         return result;
@@ -297,10 +415,18 @@
     }
     
     public class EnvironmentCheckResult {
+
+        private bool _didPass = false;
+        private string _adListItem = string.Empty;
+        private string _iconCss = string.Empty;
+        private string _message = string.Empty;
+        private string _helpText = string.Empty;
+        private string _helpLink = string.Empty;
+        
         public bool DidPass
         {
-            get;
-            set;
+            get { return this._didPass;}
+            set { this._didPass = value; }
         }
 
         public string AsListItem
@@ -315,7 +441,7 @@
         {
             get
             {
-                if ( this.DidPass )
+                if ( this._didPass )
                 {
                     return "fa fa-check-circle pass";
                 }
@@ -328,22 +454,22 @@
         
         public string Message
         {
-            get;
-            set;
+            get { return this._message; }
+            set { this._message = value; }
         }
 
         public string HelpText
         {
             get
             {
-                return String.Format( "<a href='{0}' class='btn btn-info btn-xs'>Let's Fix It Together</a>", this.HelpLink );
+                return String.Format( "<a href='{0}' class='btn btn-info btn-xs'>Let's Fix It Together</a>", this._helpLink );
             }
         }
         
         public string HelpLink
         {
-            get;
-            set;
+            get { return this._helpLink; }
+            set { this._helpLink = value; }
         }
     }
 </script>

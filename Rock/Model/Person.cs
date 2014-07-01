@@ -1100,6 +1100,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="photoId">The photo identifier.</param>
         /// <param name="gender">The gender.</param>
+        /// <param name="RecordTypeValueGuid">The record type value unique identifier.</param>
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="maxHeight">The maximum height.</param>
         /// <returns></returns>
@@ -1468,13 +1469,16 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the <see cref="Rock.Model.Person"/> entity of the provided Person's spouse.
+        /// Gets the <see cref="Rock.Model.Person" /> entity of the provided Person's spouse.
         /// </summary>
-        /// <param name="person">The <see cref="Rock.Model.Person"/> entity of the Person to retrieve the spouse of.</param>
-        /// <returns>The <see cref="Rock.Model.Person"/> entity containing the provided Person's spouse. If the provided Person's spouse is not found, this value will be null.</returns>
-        public static Person GetSpouse( this Person person )
+        /// <param name="person">The <see cref="Rock.Model.Person" /> entity of the Person to retrieve the spouse of.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>
+        /// The <see cref="Rock.Model.Person" /> entity containing the provided Person's spouse. If the provided Person's spouse is not found, this value will be null.
+        /// </returns>
+        public static Person GetSpouse( this Person person, RockContext rockContext = null )
         {
-            return new PersonService( new RockContext() ).GetSpouse( person );
+            return new PersonService( rockContext ?? new RockContext() ).GetSpouse( person );
         }
 
     }

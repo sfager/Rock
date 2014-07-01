@@ -28,9 +28,13 @@ namespace Rock.Model
     /// </summary>
     public partial class WorkflowActionService 
     {
+        /// <summary>
+        /// Gets the active forms.
+        /// </summary>
+        /// <returns></returns>
         public IQueryable<WorkflowAction> GetActiveForms()
         {
-            return Queryable( "ActionType.ActivityType.WorkflowType, Activity.Workflow" )
+            return Queryable( "ActionType.ActivityType.WorkflowType, Activity.Workflow, Activity.AssignedPersonAlias, Activity.AssignedGroup" )
                 .Where( a =>
                     a.ActionType.WorkflowFormId.HasValue &&
                     ( a.ActionType.ActivityType.IsActive ?? true ) &&
@@ -43,6 +47,11 @@ namespace Rock.Model
                     !a.Activity.Workflow.CompletedDateTime.HasValue );
         }
 
+        /// <summary>
+        /// Gets the active forms.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
         public List<WorkflowAction> GetActiveForms( Person person )
         {
             // Get all of the active form actions
@@ -71,7 +80,11 @@ namespace Rock.Model
             return formActions
                 .Where( a => 
                     authorizedActivityTypeIds.Contains( a.ActionType.ActivityTypeId ) &&
-                    a.Activity.IsAssigned( person, false) )
+                    (
+                        ( a.Activity.AssignedPersonAlias != null && a.Activity.AssignedPersonAlias.PersonId == person.Id ) ||
+                        ( a.Activity.AssignedGroup != null && a.Activity.AssignedGroup.Members.Any( m => m.PersonId == person.Id ) ) 
+                    )
+                 )
                 .ToList();
         }
     }

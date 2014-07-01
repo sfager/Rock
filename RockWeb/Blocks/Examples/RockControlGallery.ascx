@@ -20,10 +20,10 @@
         <asp:Panel ID="pnlActions" runat="server">
             <div class="pull-right">
                 <div class="pull-right">
-                    <Rock:Toggle runat="server" ID="tglLabels" OnText="Yes" OffText="No" Checked="true" Label="Show Labels" CssClass="switch-mini" OnCheckedChanged="tglLabels_CheckedChanged" />
+                    <Rock:Toggle runat="server" ID="tglLabels" OnText="Yes" OffText="No" Checked="true" Label="Show Labels" ButtonSizeCssClass="btn-sm" OnCheckedChanged="tglLabels_CheckedChanged" />
                 </div>
                 <div class="pull-right" style="margin-right: 12px;">
-                    <Rock:Toggle runat="server" ID="tglEnabled" OnText="Yes" OffText="No" Checked="true" Label="Controls Enabled" CssClass="switch-mini" OnCheckedChanged="tglEnabled_CheckedChanged" />
+                    <Rock:Toggle runat="server" ID="tglEnabled" OnText="Yes" OffText="No" Checked="true" Label="Controls Enabled" ButtonSizeCssClass="btn-sm" OnCheckedChanged="tglEnabled_CheckedChanged" />
                 </div>
             </div>
         </asp:Panel>
@@ -73,18 +73,21 @@
             <a id="Grid"></a>
             <h2 runat="server">Rock:Grid</h2>
             <div runat="server" class="r-example">
-                <Rock:Grid ID="gExample" runat="server" AllowSorting="true">
-                    <Columns>
-                        <Rock:ColorField DataField="DefinedValueColor" ToolTipDataField="DefinedValueTypeName" HeaderText="" />
-                        <asp:BoundField DataField="DefinedValueTypeName" HeaderText="Name" SortExpression="DefinedValueTypeName" />
-                        <Rock:DateTimeField DataField="SomeDateTime" HeaderText="DateTime" SortExpression="SomeDateTime" />
-                        <Rock:BoolField DataField="SomeBoolean" HeaderText="Some Boolean" SortExpression="SomeBoolean" />
-                        <Rock:EditField />
-                        <Rock:SecurityField />
-                        <Rock:DeleteField />
-                    </Columns>
-                </Rock:Grid>
+                <div class="grid">
+                    <Rock:Grid ID="gExample" runat="server" AllowSorting="true">
+                        <Columns>
+                            <Rock:ColorField DataField="DefinedValueColor" ToolTipDataField="DefinedValueTypeName" HeaderText="" />
+                            <asp:BoundField DataField="DefinedValueTypeName" HeaderText="Name" SortExpression="DefinedValueTypeName" />
+                            <Rock:DateTimeField DataField="SomeDateTime" HeaderText="DateTime" SortExpression="SomeDateTime" />
+                            <Rock:BoolField DataField="SomeBoolean" HeaderText="Some Boolean" SortExpression="SomeBoolean" />
+                            <Rock:EditField />
+                            <Rock:SecurityField />
+                            <Rock:DeleteField />
+                        </Columns>
+                    </Rock:Grid>
+                </div>
             </div>
+            <div class="alert alert-info"><strong>Note</strong> An extra div is required around the grid to help wrap the grid and an optional grid filter for styling.</div>
 
 
             <a id="DropDowns"></a>
@@ -382,17 +385,28 @@
             <p>A toggle switch for those cases when a simple checkbox just won't do.</p>
             <div runat="server" class="r-example">
                 <Rock:Toggle ID="toggleShowPreview" runat="server"
-                    LabelText="Show Preview?" OnText="Yes" OffText="No" Checked="true"
+                    Label="Show Preview?" OnText="Yes" OffText="No" Checked="true"
                     Help="If set to yes, a preview will be shown immediately as you update your criteria."
                     OnCheckedChanged="toggleShowPreview_CheckedChanged" />
             </div>
 
-            <a id="ToggleSizes"></a>
-            <p>Need larger or smaller switches? Add class modifiers <code>.switch-large</code>, <code>.switch-small</code> or <code>.switch-mini</code></p>
+            <a id="ToggleActiveButton"></a>
+            <p>Need special color indicators on the buttons? Set ActiveButtonCssClass to <code>.btn-info</code>, <code>.btn-success</code>, <code>.btn-danger</code> or <code>.btn-warning</code></p>
             <div runat="server" class="r-example">
-                <Rock:Toggle ID="tglExample1" runat="server" CssClass="switch-large" />
-                <Rock:Toggle ID="tglExample2" runat="server" CssClass="switch-small" />
-                <Rock:Toggle ID="tglExample3" runat="server" CssClass="switch-mini" />
+                <Rock:Toggle ID="tglExample1" runat="server" />
+                <Rock:Toggle ID="tglExample2" runat="server" ActiveButtonCssClass="btn-info" />
+                <Rock:Toggle ID="tglExample3" runat="server" ActiveButtonCssClass="btn-success" />
+                <Rock:Toggle ID="tglExample4" runat="server" ActiveButtonCssClass="btn-danger" />
+                <Rock:Toggle ID="tglExample5" runat="server" ActiveButtonCssClass="btn-warning" />
+            </div>
+
+            <a id="ToggleSizes"></a>
+            <p>Need larger or smaller toggle buttons? Set ButtonSizeCssClass to <code>.btn-lg</code>, <code>.btn-sm</code> or <code>.btn-xs</code></p>
+            <div runat="server" class="r-example">
+                <Rock:Toggle ID="tglExample6" runat="server" ButtonSizeCssClass="btn-lg" />
+                <Rock:Toggle ID="tglExample7" runat="server" />
+                <Rock:Toggle ID="tglExample8" runat="server" ButtonSizeCssClass="btn-sm" />
+                <Rock:Toggle ID="tglExample9" runat="server" ButtonSizeCssClass="btn-xs" />
             </div>
 
             <a id="BootstrapButton"></a>

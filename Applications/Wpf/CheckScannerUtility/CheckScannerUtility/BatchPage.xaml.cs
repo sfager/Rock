@@ -29,10 +29,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-
-using Rock.Constants;
-using Rock.Model;
-using Rock.Net;
+using RestSharp;
+using Rock.Client;
 using Rock.Wpf;
 
 namespace Rock.Apps.CheckScannerUtility
@@ -299,7 +297,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// The persisted client.
         /// </value>
-        private RockRestClient persistedClient { get; set; }
+        private RestClient persistedClient { get; set; }
 
         /// <summary>
         /// Determines whether [is duplicate scan] [the specified scanned document].
@@ -316,7 +314,7 @@ namespace Rock.Apps.CheckScannerUtility
             if ( persistedClient == null )
             {
                 var rockConfig = RockConfig.Load();
-                persistedClient = new RockRestClient( rockConfig.RockBaseUrl );
+                persistedClient = new RestClient( rockConfig.RockBaseUrl );
                 persistedClient.Login( rockConfig.Username, rockConfig.Password );
             }
 
@@ -644,7 +642,7 @@ namespace Rock.Apps.CheckScannerUtility
             BackgroundWorker bw = sender as BackgroundWorker;
 
             RockConfig rockConfig = RockConfig.Load();
-            RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
+            RestClient client = new RestClient( rockConfig.RockBaseUrl );
             client.Login( rockConfig.Username, rockConfig.Password );
 
             AssemblyName assemblyName = Assembly.GetExecutingAssembly().GetName();
@@ -661,7 +659,7 @@ namespace Rock.Apps.CheckScannerUtility
                 // upload image of front of doc
                 BinaryFile binaryFileFront = new BinaryFile();
                 binaryFileFront.Guid = Guid.NewGuid();
-                binaryFileFront.FileName = string.Format( "image1_{0}.png", RockDateTime.Now.ToString( "o" ).RemoveSpecialCharacters() );
+                binaryFileFront.FileName = string.Format( "image1_{0}.png", DateTime.Now.ToString( "o" ).RemoveSpecialCharacters() );
                 binaryFileFront.BinaryFileTypeId = binaryFileTypeContribution.Id;
                 binaryFileFront.IsSystem = false;
                 binaryFileFront.MimeType = "image/png";
@@ -680,7 +678,7 @@ namespace Rock.Apps.CheckScannerUtility
                 {
                     binaryFileBack = new BinaryFile();
                     binaryFileBack.Guid = Guid.NewGuid();
-                    binaryFileBack.FileName = string.Format( "image2_{0}.png", RockDateTime.Now.ToString( "o" ).RemoveSpecialCharacters() );
+                    binaryFileBack.FileName = string.Format( "image2_{0}.png", DateTime.Now.ToString( "o" ).RemoveSpecialCharacters() );
 
                     // upload image of back of doc
                     binaryFileBack.BinaryFileTypeId = binaryFileTypeContribution.Id;
@@ -698,17 +696,9 @@ namespace Rock.Apps.CheckScannerUtility
                 int percentComplete = position++ * 100 / totalCount;
                 bw.ReportProgress( percentComplete );
 
-                FinancialTransaction financialTransactionScanned;
+                FinancialTransactionScannedCheck financialTransactionScanned = new FinancialTransactionScannedCheck();
 
                 Guid transactionGuid = Guid.NewGuid();
-                if ( scannedDocInfo.IsCheck )
-                {
-                    financialTransactionScanned = new FinancialTransactionScannedCheck();
-                }
-                else
-                {
-                    financialTransactionScanned = new FinancialTransaction();
-                }
 
                 financialTransactionScanned.BatchId = SelectedFinancialBatch.Id;
                 financialTransactionScanned.TransactionCode = string.Empty;
@@ -724,18 +714,12 @@ namespace Rock.Apps.CheckScannerUtility
 
                 if ( scannedDocInfo.IsCheck )
                 {
-                    FinancialTransactionScannedCheck financialTransactionScannedCheck = financialTransactionScanned as FinancialTransactionScannedCheck;
-
                     // Rock server will encrypt CheckMicrPlainText to this since we can't have the DataEncryptionKey in a RestClient
-                    financialTransactionScannedCheck.CheckMicrEncrypted = null;
-                    financialTransactionScannedCheck.ScannedCheckMicr = scannedDocInfo.ScannedCheckMicr;
-
-                    client.PostData<FinancialTransactionScannedCheck>( "api/FinancialTransactions/PostScanned", financialTransactionScannedCheck );
+                    financialTransactionScanned.CheckMicrEncrypted = null;
+                    financialTransactionScanned.ScannedCheckMicr = scannedDocInfo.ScannedCheckMicr;
                 }
-                else
-                {
-                    client.PostData<FinancialTransaction>( "api/FinancialTransactions", financialTransactionScanned as FinancialTransaction );
-                }
+                
+                client.PostData<FinancialTransactionScannedCheck>( "api/FinancialTransactions/PostScanned", financialTransactionScanned );
 
                 // get the FinancialTransaction back from server so that we can get it's Id
                 int transactionId = client.GetDataByGuid<FinancialTransaction>( "api/FinancialTransactions", transactionGuid ).Id;
@@ -803,14 +787,14 @@ namespace Rock.Apps.CheckScannerUtility
         private void LoadComboBoxes()
         {
             RockConfig rockConfig = RockConfig.Load();
-            RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
+            RestClient client = new RestClient( rockConfig.RockBaseUrl );
             client.Login( rockConfig.Username, rockConfig.Password );
             List<Campus> campusList = client.GetData<List<Campus>>( "api/Campus" );
 
             cbCampus.SelectedValuePath = "Id";
             cbCampus.DisplayMemberPath = "Name";
             cbCampus.Items.Clear();
-            cbCampus.Items.Add( new Campus { Id = None.Id, Name = None.Text } );
+            cbCampus.Items.Add( new Campus { Id = 0, Name = string.Empty } );
             foreach ( var campus in campusList.OrderBy( a => a.Name ) )
             {
                 cbCampus.Items.Add( campus );
@@ -831,9 +815,9 @@ namespace Rock.Apps.CheckScannerUtility
         private void LoadFinancialBatchesGrid()
         {
             RockConfig config = RockConfig.Load();
-            RockRestClient client = new RockRestClient( config.RockBaseUrl );
+            RestClient client = new RestClient( config.RockBaseUrl );
             client.Login( config.Username, config.Password );
-            List<FinancialBatch> pendingBatches = client.GetDataByEnum<List<FinancialBatch>>( "api/FinancialBatches", "Status", BatchStatus.Pending );
+            List<FinancialBatch> pendingBatches = client.GetDataByEnum<List<FinancialBatch>>( "api/FinancialBatches", "Status", 0 /* Pending */ );
 
             grdBatches.DataContext = pendingBatches.OrderByDescending( a => a.BatchStartDateTime ).ThenBy( a => a.Name );
             if ( pendingBatches.Count > 0 )
@@ -1095,13 +1079,13 @@ namespace Rock.Apps.CheckScannerUtility
             try
             {
                 RockConfig rockConfig = RockConfig.Load();
-                RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
+                RestClient client = new RestClient( rockConfig.RockBaseUrl );
                 client.Login( rockConfig.Username, rockConfig.Password );
 
                 FinancialBatch financialBatch = null;
                 if ( SelectedFinancialBatch == null || SelectedFinancialBatch.Id == 0 )
                 {
-                    financialBatch = new FinancialBatch { Id = 0, Guid = Guid.NewGuid(), Status = BatchStatus.Pending, CreatedByPersonAliasId = LoggedInPerson.PrimaryAlias.Id };
+                    financialBatch = new FinancialBatch { Id = 0, Guid = Guid.NewGuid(), Status = 0, CreatedByPersonAliasId = LoggedInPerson.PrimaryAliasId };
                 }
                 else
                 {
@@ -1208,14 +1192,15 @@ namespace Rock.Apps.CheckScannerUtility
             }
 
             RockConfig rockConfig = RockConfig.Load();
-            RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
+            RestClient client = new RestClient( rockConfig.RockBaseUrl );
             client.Login( rockConfig.Username, rockConfig.Password );
             SelectedFinancialBatch = selectedBatch;
             lblBatchNameReadOnly.Content = selectedBatch.Name;
 
-            lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campus/{0}", selectedBatch.CampusId ) ).Name : None.Text;
+            lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campus/{0}", selectedBatch.CampusId ) ).Name : string.Empty;
             lblBatchDateReadOnly.Content = selectedBatch.BatchStartDateTime.Value.ToString( "d" );
-            lblBatchCreatedByReadOnly.Content = client.GetData<Person>( string.Format( "api/People/GetByPersonAliasId/{0}", selectedBatch.CreatedByPersonAliasId ) ).FullName;
+            var person = client.GetData<Person>( string.Format( "api/People/GetByPersonAliasId/{0}", selectedBatch.CreatedByPersonAliasId ) );
+            lblBatchCreatedByReadOnly.Content = person.FullName;
             lblBatchControlAmountReadOnly.Content = selectedBatch.ControlAmount.ToString( "F" );
 
             txtBatchName.Text = selectedBatch.Name;
@@ -1287,7 +1272,7 @@ namespace Rock.Apps.CheckScannerUtility
                 if ( financialTransaction != null )
                 {
                     RockConfig config = RockConfig.Load();
-                    RockRestClient client = new RockRestClient( config.RockBaseUrl );
+                    RestClient client = new RestClient( config.RockBaseUrl );
                     client.Login( config.Username, config.Password );
                     financialTransaction.Images = client.GetData<List<FinancialTransactionImage>>( "api/FinancialTransactionImages", string.Format( "TransactionId eq {0}", financialTransaction.Id ) );
                     foreach ( var image in financialTransaction.Images )

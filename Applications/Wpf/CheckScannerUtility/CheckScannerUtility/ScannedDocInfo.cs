@@ -16,6 +16,7 @@
 //
 using System.Drawing;
 using System.IO;
+using Rock.Client;
 
 namespace Rock.Apps.CheckScannerUtility
 {
@@ -82,7 +83,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// The currency type value.
         /// </value>
-        public Rock.Model.DefinedValue CurrencyTypeValue { get; set; }
+        public DefinedValue CurrencyTypeValue { get; set; }
 
         /// <summary>
         /// Gets or sets the source type value.
@@ -90,7 +91,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// The source type value.
         /// </value>
-        public Rock.Model.DefinedValue SourceTypeValue { get; set; }
+        public DefinedValue SourceTypeValue { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="ScannedDocInfo"/> is uploaded.

@@ -1,4 +1,6 @@
-﻿// <copyright>
+﻿using System.Collections;
+using System.Collections.Generic;
+// <copyright>
 // Copyright 2013 by the Spark Development Network
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +20,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media.Imaging;
-using Rock.Model;
+using Rock.Client;
 
 namespace Rock.Apps.CheckScannerUtility
 {

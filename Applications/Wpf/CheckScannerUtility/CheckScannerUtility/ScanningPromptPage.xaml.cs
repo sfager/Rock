@@ -29,8 +29,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Rock.Model;
-using Rock.Net;
+
+using Rock.Client;
 
 namespace Rock.Apps.CheckScannerUtility
 {

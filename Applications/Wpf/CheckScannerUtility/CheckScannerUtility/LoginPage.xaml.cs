@@ -21,8 +21,8 @@ using System.Net;
 using System.Linq;
 using System.Windows;
 using System.Windows.Input;
-using Rock.Model;
-using Rock.Net;
+using RestSharp;
+using Rock.Client;
 
 namespace Rock.Apps.CheckScannerUtility
 {
@@ -58,7 +58,7 @@ namespace Rock.Apps.CheckScannerUtility
             lblLoginWarning.Visibility = Visibility.Hidden;
             txtUsername.Text = txtUsername.Text.Trim();
             txtRockUrl.Text = txtRockUrl.Text.Trim();
-            RockRestClient rockRestClient = new RockRestClient( txtRockUrl.Text );
+            RestClient restClient = new RestClient( txtRockUrl.Text );
 
             string userName = txtUsername.Text;
             string password = txtPassword.Password;
@@ -68,7 +68,7 @@ namespace Rock.Apps.CheckScannerUtility
             bw.DoWork += delegate( object s, DoWorkEventArgs ee )
             {
                 ee.Result = null;
-                rockRestClient.Login( userName, password );
+                restClient.Login( userName, password );
             };
 
             // when the Background Worker is done with the Login, run this
@@ -83,8 +83,8 @@ namespace Rock.Apps.CheckScannerUtility
                         throw ee.Error;
                     }
 
-                    Person person = rockRestClient.GetData<Person>( string.Format( "api/People/GetByUserName/{0}", userName ) );
-                    person.Aliases = rockRestClient.GetData<List<PersonAlias>>( "api/PersonAlias/", "PersonId eq " + person.Id );
+                    Person person = restClient.GetData<Person>( string.Format( "api/People/GetByUserName/{0}", userName ) );
+                    person.Aliases = restClient.GetData<List<PersonAlias>>( "api/PersonAlias/", "PersonId eq " + person.Id );
                     RockConfig rockConfig = RockConfig.Load();
                     rockConfig.RockBaseUrl = txtRockUrl.Text;
                     rockConfig.Username = txtUsername.Text;
@@ -146,6 +146,12 @@ namespace Rock.Apps.CheckScannerUtility
         {
             HideLoginWarning( null, null );
             RockConfig rockConfig = RockConfig.Load();
+
+
+            //DEBUG
+            rockConfig.RockBaseUrl = "http://localhost:6229/";
+            rockConfig.Username = "admin";
+            rockConfig.Password = "admin";
 
             bool promptForUrl = string.IsNullOrWhiteSpace( rockConfig.RockBaseUrl ) || ForceRockURLVisible;
 

@@ -21,13 +21,14 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using System;
+using Rock.Client;
 
 namespace Rock.Apps.CheckScannerUtility
 {
     /// <summary>
     /// Interaction logic for ScanningPage.xaml
     /// </summary>
-    public partial class ScanningPage : Page
+    public partial class ScanningPage : System.Windows.Controls.Page
     {
         /// <summary>
         /// Gets or sets the batch page.

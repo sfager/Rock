@@ -74,13 +74,13 @@
       <HintPath>AxFiles\AxMTMicrImage.dll</HintPath>
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
-    <Reference Include="DotLiquid">
-      <HintPath>..\..\..\..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
-    </Reference>
     <Reference Include="MTMicrImage, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <EmbedInteropTypes>False</EmbedInteropTypes>
       <HintPath>AxFiles\MTMicrImage.dll</HintPath>
+    </Reference>
+    <Reference Include="RestSharp">
+      <HintPath>..\..\packages\RestSharp.104.4.0\lib\net4\RestSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -208,6 +208,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
     <Resource Include="resources\OpenSans-Light-webfont.ttf" />
     <Resource Include="resources\OpenSans-Regular-webfont.ttf" />
   </ItemGroup>
@@ -229,9 +230,9 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Rock\Rock.csproj">
-      <Project>{8f8c2a79-24f4-4157-8b99-45f75fa85799}</Project>
-      <Name>Rock</Name>
+    <ProjectReference Include="..\..\..\..\Rock.Client\Rock.Client.csproj">
+      <Project>{6ea64bb9-9740-453a-939b-df43ad9ac164}</Project>
+      <Name>Rock.Client</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Rock.Wpf\Rock.Wpf.csproj">
       <Project>{90440596-fa0a-45e7-8872-3da47786f6a7}</Project>

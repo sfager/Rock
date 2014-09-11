@@ -35,48 +35,6 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Rock\SystemGuid\BinaryFileType.cs">
-      <Link>SystemGuid\BinaryFileType.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\BlockType.cs">
-      <Link>SystemGuid\BlockType.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\Category.cs">
-      <Link>SystemGuid\Category.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\DefinedType.cs">
-      <Link>SystemGuid\DefinedType.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\DefinedValue.cs">
-      <Link>SystemGuid\DefinedValue.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\EntityType.cs">
-      <Link>SystemGuid\EntityType.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\FieldType.cs">
-      <Link>SystemGuid\FieldType.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\FinancialAccount.cs">
-      <Link>SystemGuid\FinancialAccount.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\Group.cs">
-      <Link>SystemGuid\Group.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\GroupRole.cs">
-      <Link>SystemGuid\GroupRole.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\GroupType.cs">
-      <Link>SystemGuid\GroupType.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\Page.cs">
-      <Link>SystemGuid\Page.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\Site.cs">
-      <Link>SystemGuid\Site.cs</Link>
-    </Compile>
-    <Compile Include="..\Rock\SystemGuid\SystemEmail.cs">
-      <Link>SystemGuid\SystemEmail.cs</Link>
-    </Compile>
     <Compile Include="CodeGenerated\Attendance.cs" />
     <Compile Include="CodeGenerated\AttendanceCode.cs" />
     <Compile Include="CodeGenerated\Attribute.cs" />
@@ -170,17 +128,9 @@
     <Compile Include="CodeGenerated\WorkflowLog.cs" />
     <Compile Include="CodeGenerated\WorkflowTrigger.cs" />
     <Compile Include="CodeGenerated\WorkflowType.cs" />
-    <Compile Include="FinancialTransaction.Partial.cs" />
-    <Compile Include="FinancialTransactionImage.Partial.cs" />
-    <Compile Include="Person.Partial.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="BinaryFile.partial.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Partials\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

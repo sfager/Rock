@@ -46,6 +46,14 @@ namespace Rock.Apps.CheckScannerUtility
         public FinancialTransaction FinancialTransaction { get; set; }
 
         /// <summary>
+        /// Gets or sets the financial transaction image data list.
+        /// </summary>
+        /// <value>
+        /// The financial transaction image data list.
+        /// </value>
+        public List<byte[]> FinancialTransactionImageDataList { get; set; }
+
+        /// <summary>
         /// Handles the Click event of the btnClose control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -62,13 +70,11 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void Page_Loaded( object sender, RoutedEventArgs e )
         {
-            var images = FinancialTransaction.Images.OrderBy(a => a.Order).ToList();
-
-            if ( images.Count > 0 )
+            if ( FinancialTransactionImageDataList.Count > 0 )
             {
                 BitmapImage bitmapImage = new BitmapImage();
                 bitmapImage.BeginInit();
-                bitmapImage.StreamSource = new MemoryStream( images[0].BinaryFile.Data.Content );
+                bitmapImage.StreamSource = new MemoryStream( FinancialTransactionImageDataList[0] );
                 bitmapImage.EndInit();
                 imgFront.Source = bitmapImage;
             }
@@ -77,11 +83,11 @@ namespace Rock.Apps.CheckScannerUtility
                 imgFront.Source = null;
             }
 
-            if ( images.Count > 1 )
+            if ( FinancialTransactionImageDataList.Count > 1 )
             {
                 BitmapImage bitmapImage = new BitmapImage();
                 bitmapImage.BeginInit();
-                bitmapImage.StreamSource = new MemoryStream( images[1].BinaryFile.Data.Content );
+                bitmapImage.StreamSource = new MemoryStream( FinancialTransactionImageDataList[1] );
                 bitmapImage.EndInit();
                 imgBack.Source = bitmapImage;
             }

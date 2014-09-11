@@ -12,6 +12,7 @@
         <WindowsFormsHost x:Name="micrImageHost"
                           Visibility="Collapsed"
                           >
+            <!-- NOTE: It's OK to get an exception here. It just means you don't have the MagTek driver installed -->
             <ax2:AxMicrImage x:Name="micrImage"  />
         </WindowsFormsHost>
     </Grid>

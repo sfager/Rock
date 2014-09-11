@@ -84,14 +84,15 @@ namespace Rock.Apps.CheckScannerUtility
                     }
 
                     Person person = restClient.GetData<Person>( string.Format( "api/People/GetByUserName/{0}", userName ) );
-                    person.Aliases = restClient.GetData<List<PersonAlias>>( "api/PersonAlias/", "PersonId eq " + person.Id );
+                    var primaryAlias = restClient.GetData<List<PersonAlias>>( "api/PersonAlias/", "PersonId eq AliasPersonId and PersonId eq " + person.Id ).FirstOrDefault();
+                    var loggedInPersonPrimaryAliasId = primaryAlias != null ? primaryAlias.Id : 0;
                     RockConfig rockConfig = RockConfig.Load();
                     rockConfig.RockBaseUrl = txtRockUrl.Text;
                     rockConfig.Username = txtUsername.Text;
                     rockConfig.Password = txtPassword.Password;
                     rockConfig.Save();
 
-                    BatchPage batchPage = new BatchPage( person );
+                    BatchPage batchPage = new BatchPage( person, loggedInPersonPrimaryAliasId );
 
                     if ( this.NavigationService.CanGoBack )
                     {

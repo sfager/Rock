@@ -234,6 +234,10 @@
       <Project>{6ea64bb9-9740-453a-939b-df43ad9ac164}</Project>
       <Name>Rock.Client</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Rock.Client.Extensions\Rock.Client.Extensions.csproj">
+      <Project>{cb713796-b5a0-4927-9eab-1626b2856b89}</Project>
+      <Name>Rock.Client.Extensions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Rock.Wpf\Rock.Wpf.csproj">
       <Project>{90440596-fa0a-45e7-8872-3da47786f6a7}</Project>
       <Name>Rock.Wpf</Name>

@@ -44,9 +44,11 @@ namespace Rock.Apps.CheckScannerUtility
         /// Initializes a new instance of the <see cref="BatchPage" /> class.
         /// </summary>
         /// <param name="loggedInPerson">The logged in person.</param>
-        public BatchPage( Person loggedInPerson )
+        /// <param name="loggedInPersonPrimaryAliasId">The logged in person primary alias identifier.</param>
+        public BatchPage( Person loggedInPerson, int loggedInPersonPrimaryAliasId )
         {
             LoggedInPerson = loggedInPerson;
+            LoggedInPersonPrimaryAliasId = loggedInPersonPrimaryAliasId;
             InitializeComponent();
             ScanningPage = new ScanningPage( this );
             ScanningPromptPage = new ScanningPromptPage( this );
@@ -117,6 +119,14 @@ namespace Rock.Apps.CheckScannerUtility
         /// The logged in person id.
         /// </value>
         public Person LoggedInPerson { get; set; }
+
+        /// <summary>
+        /// Gets or sets the logged in person primary alias identifier.
+        /// </summary>
+        /// <value>
+        /// The logged in person primary alias identifier.
+        /// </value>
+        public int LoggedInPersonPrimaryAliasId { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the feeder.
@@ -666,10 +676,10 @@ namespace Rock.Apps.CheckScannerUtility
                 client.PostData<BinaryFile>( "api/BinaryFiles/", binaryFileFront );
 
                 // upload image data content of front of doc
-                binaryFileFront.Data = new BinaryFileData();
-                binaryFileFront.Data.Content = scannedDocInfo.FrontImagePngBytes;
-                binaryFileFront.Data.Id = client.GetDataByGuid<BinaryFile>( "api/BinaryFiles/", binaryFileFront.Guid ).Id;
-                client.PostData<BinaryFileData>( "api/BinaryFileDatas/", binaryFileFront.Data );
+                var binaryFileFrontData = new BinaryFileData();
+                binaryFileFrontData.Content = scannedDocInfo.FrontImagePngBytes;
+                binaryFileFrontData.Id = client.GetDataByGuid<BinaryFile>( "api/BinaryFiles/", binaryFileFront.Guid ).Id;
+                client.PostData<BinaryFileData>( "api/BinaryFileDatas/", binaryFileFrontData );
 
                 // upload image of back of doc (if it exists)
                 BinaryFile binaryFileBack = null;
@@ -687,10 +697,10 @@ namespace Rock.Apps.CheckScannerUtility
                     client.PostData<BinaryFile>( "api/BinaryFiles/", binaryFileBack );
 
                     // upload image data content of back of doc
-                    binaryFileBack.Data = new BinaryFileData();
-                    binaryFileBack.Data.Content = scannedDocInfo.BackImagePngBytes;
-                    binaryFileBack.Data.Id = client.GetDataByGuid<BinaryFile>( "api/BinaryFiles/", binaryFileBack.Guid ).Id;
-                    client.PostData<BinaryFileData>( "api/BinaryFileDatas/", binaryFileBack.Data );
+                    var binaryFileBackData = new BinaryFileData();
+                    binaryFileBackData.Content = scannedDocInfo.BackImagePngBytes;
+                    binaryFileBackData.Id = client.GetDataByGuid<BinaryFile>( "api/BinaryFiles/", binaryFileBack.Guid ).Id;
+                    client.PostData<BinaryFileData>( "api/BinaryFileDatas/", binaryFileBackData );
                 }
 
                 int percentComplete = position++ * 100 / totalCount;
@@ -1090,7 +1100,7 @@ namespace Rock.Apps.CheckScannerUtility
                 FinancialBatch financialBatch = null;
                 if ( SelectedFinancialBatch == null || SelectedFinancialBatch.Id == 0 )
                 {
-                    financialBatch = new FinancialBatch { Id = 0, Guid = Guid.NewGuid(), Status = 0, CreatedByPersonAliasId = LoggedInPerson.PrimaryAliasId };
+                    financialBatch = new FinancialBatch { Id = 0, Guid = Guid.NewGuid(), Status = 0, CreatedByPersonAliasId = LoggedInPersonPrimaryAliasId };
                 }
                 else
                 {
@@ -1205,7 +1215,7 @@ namespace Rock.Apps.CheckScannerUtility
             lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campus/{0}", selectedBatch.CampusId ) ).Name : string.Empty;
             lblBatchDateReadOnly.Content = selectedBatch.BatchStartDateTime.Value.ToString( "d" );
             var person = client.GetData<Person>( string.Format( "api/People/GetByPersonAliasId/{0}", selectedBatch.CreatedByPersonAliasId ) );
-            lblBatchCreatedByReadOnly.Content = person.FullName;
+            lblBatchCreatedByReadOnly.Content = string.Format("{0} {1}", person.NickName, person.LastName).Trim();
             lblBatchControlAmountReadOnly.Content = selectedBatch.ControlAmount.ToString( "F" );
 
             txtBatchName.Text = selectedBatch.Name;
@@ -1223,17 +1233,16 @@ namespace Rock.Apps.CheckScannerUtility
             txtControlAmount.Text = selectedBatch.ControlAmount.ToString( "F" );
 
             List<FinancialTransaction> transactions = client.GetData<List<FinancialTransaction>>( "api/FinancialTransactions/", string.Format( "BatchId eq {0}", selectedBatch.Id ) );
-            foreach ( var transaction in transactions )
-            {
-                transaction.CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( a => a.Id == transaction.CurrencyTypeValueId );
-            }
+
+            int currencyTypeValueIdCheck = this.CurrencyValueList.FirstOrDefault( a => a.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid() ).Id;
 
             // include CheckNumber for checks that we scanned in this session
             var scannedCheckList = ScannedDocList.Where( a => a.IsCheck ).ToList();
             var gridList = transactions.OrderByDescending( a => a.CreatedDateTime ).Select( a => new
             {
                 FinancialTransaction = a,
-                CheckNumber = a.CurrencyTypeValue.Guid == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK.AsGuid()
+                CurrencyTypeValue = this.CurrencyValueList.FirstOrDefault( c => c.Id == a.CurrencyTypeValueId) != null ? this.CurrencyValueList.FirstOrDefault( c => c.Id == a.CurrencyTypeValueId).Value : string.Empty,
+                CheckNumber = a.CurrencyTypeValueId == currencyTypeValueIdCheck
                     ? scannedCheckList.FirstOrDefault( s => s.TransactionId == a.Id ) != null ? scannedCheckList.FirstOrDefault( s => s.TransactionId == a.Id ).CheckNumber : "****"
                     : "-"
             } );
@@ -1248,7 +1257,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnAddBatch_Click( object sender, RoutedEventArgs e )
         {
-            var financialBatch = new FinancialBatch { Id = 0, BatchStartDateTime = DateTime.Now.Date, CreatedByPersonAliasId = LoggedInPerson.PrimaryAlias.Id };
+            var financialBatch = new FinancialBatch { Id = 0, BatchStartDateTime = DateTime.Now.Date, CreatedByPersonAliasId = LoggedInPersonPrimaryAliasId };
             UpdateBatchUI( financialBatch );
             ShowBatch( true );
         }
@@ -1279,21 +1288,14 @@ namespace Rock.Apps.CheckScannerUtility
                     RockConfig config = RockConfig.Load();
                     RestClient client = new RestClient( config.RockBaseUrl );
                     client.Login( config.Username, config.Password );
-                    financialTransaction.Images = client.GetData<List<FinancialTransactionImage>>( "api/FinancialTransactionImages", string.Format( "TransactionId eq {0}", financialTransaction.Id ) );
-                    foreach ( var image in financialTransaction.Images )
+                    var financialTransactionImages = client.GetData<List<FinancialTransactionImage>>( "api/FinancialTransactionImages", string.Format( "TransactionId eq {0}", financialTransaction.Id ) );
+                    BatchItemDetailPage.FinancialTransactionImageDataList = new List<byte[]>();
+                    foreach ( var image in financialTransactionImages.OrderBy(a => a.Order ) )
                     {
-                        image.BinaryFile = client.GetData<BinaryFile>( string.Format( "api/BinaryFiles/{0}", image.BinaryFileId ) );
-                        try
+                        var binaryFileData = client.GetData<BinaryFileData>( string.Format( "api/BinaryFileDatas/{0}", image.BinaryFileId ) );
+                        if ( binaryFileData != null && binaryFileData.Content != null )
                         {
-                            image.BinaryFile.Data = client.GetData<BinaryFileData>( string.Format( "api/BinaryFileDatas/{0}", image.BinaryFileId ) );
-                            if ( image.BinaryFile.Data == null || image.BinaryFile.Data.Content == null )
-                            {
-                                throw new Exception( "Image Content is empty" );
-                            }
-                        }
-                        catch ( Exception ex )
-                        {
-                            throw new Exception( "Error getting doc image data: " + ex.Message );
+                            BatchItemDetailPage.FinancialTransactionImageDataList.Add( binaryFileData.Content );
                         }
                     }
 

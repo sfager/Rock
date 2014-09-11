@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{CB713796-B5A0-4927-9EAB-1626B2856B89}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Rock.Client</RootNamespace>
+    <AssemblyName>Rock.Client.Extensions</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="RestSharp">
+      <HintPath>..\packages\RestSharp.104.4.0\lib\net4\RestSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\..\rock\systemguid\BinaryFileType.cs">
+      <Link>SystemGuid\BinaryFileType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\rock\systemguid\BlockType.cs">
+      <Link>SystemGuid\BlockType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\rock\systemguid\Category.cs">
+      <Link>SystemGuid\Category.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\rock\systemguid\DefinedType.cs">
+      <Link>SystemGuid\DefinedType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\rock\systemguid\DefinedValue.cs">
+      <Link>SystemGuid\DefinedValue.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\rock\systemguid\EntityType.cs">
+      <Link>SystemGuid\EntityType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\rock\systemguid\FieldType.cs">
+      <Link>SystemGuid\FieldType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\rock\systemguid\FinancialAccount.cs">
+      <Link>SystemGuid\FinancialAccount.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\rock\systemguid\Group.cs">
+      <Link>SystemGuid\Group.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\rock\systemguid\GroupRole.cs">
+      <Link>SystemGuid\GroupRole.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\rock\systemguid\GroupType.cs">
+      <Link>SystemGuid\GroupType.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\rock\systemguid\Page.cs">
+      <Link>SystemGuid\Page.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\rock\systemguid\Site.cs">
+      <Link>SystemGuid\Site.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\rock\systemguid\SystemEmail.cs">
+      <Link>SystemGuid\SystemEmail.cs</Link>
+    </Compile>
+    <Compile Include="Utility\RestSharpExtensions.cs" />
+    <Compile Include="Utility\StringExtensions.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Rock.Client\Rock.Client.csproj">
+      <Project>{6ea64bb9-9740-453a-939b-df43ad9ac164}</Project>
+      <Name>Rock.Client</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

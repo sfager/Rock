@@ -12,6 +12,7 @@
         <WindowsFormsHost x:Name="rangerHost"
                           Visibility="Collapsed"
                           >
+            <!-- NOTE: It's OK to get an exception here. It just means you don't have the Ranger driver installed -->
             <ax:AxRanger x:Name="rangerScanner"
                          />
         </WindowsFormsHost>

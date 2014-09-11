@@ -24,6 +24,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -39,6 +40,7 @@ namespace RockWeb.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Displays the details of the given report." )]
 
+    [IntegerField( "Database Timeout", "The number of seconds to wait before reporting a database timeout.", false, 180 )]
     public partial class ReportDetail : RockBlock, IDetailBlock
     {
         #region Properties
@@ -79,6 +81,15 @@ namespace RockWeb.Blocks.Reporting
             gReport.RowDataBound += gReport_RowDataBound;
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Report.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Report ) ).Id;
+
+            //// set postback timeout to whatever the DatabaseTimeout is plus an extra 5 seconds so that page doesn't timeout before the database does
+            //// note: this only makes a difference on Postback, not on the initial page visit
+            int databaseTimeout = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180;
+            var sm = ScriptManager.GetCurrent( this.Page );
+            if ( sm.AsyncPostBackTimeout < databaseTimeout + 5 )
+            {
+                sm.AsyncPostBackTimeout = databaseTimeout + 5;
+            }
         }
 
         /// <summary>
@@ -524,6 +535,8 @@ namespace RockWeb.Blocks.Reporting
                 var entityFields = Rock.Reporting.EntityHelper.GetEntityFields( entityType );
                 ddlFields.Items.Clear();
 
+                var listItems = new List<ListItem>();
+
                 // Add Fields for the EntityType
                 foreach ( var entityField in entityFields.OrderBy( a => !a.IsPreviewable ).ThenBy( a => a.Title ) )
                 {
@@ -547,7 +560,7 @@ namespace RockWeb.Blocks.Reporting
                         listItem.Attributes["optiongroup"] = "Other";
                     }
 
-                    ddlFields.Items.Add( listItem );
+                    listItems.Add( listItem );
                 }
 
                 // Add DataSelect MEF Components that apply to this EntityType
@@ -560,8 +573,13 @@ namespace RockWeb.Blocks.Reporting
                         listItem.Text = component.GetTitle( selectEntityType.GetEntityType() );
                         listItem.Value = string.Format( "{0}|{1}", ReportFieldType.DataSelectComponent, component.TypeId );
                         listItem.Attributes["optiongroup"] = component.Section;
-                        ddlFields.Items.Add( listItem );
+                        listItems.Add( listItem );
                     }
+                }
+
+                foreach ( var item in listItems.OrderByDescending( a => (a.Attributes["optiongroup"] == "Common")).ThenBy( a => a.Text ).ToArray() )
+                {
+                    ddlFields.Items.Add(item);
                 }
 
                 ddlFields.Items.Insert( 0, new ListItem( string.Empty, "0" ) );
@@ -815,6 +833,7 @@ namespace RockWeb.Blocks.Reporting
                 {
                     return;
                 }
+
                 var rockContext = new RockContext();
 
                 string authorizationMessage;
@@ -824,7 +843,6 @@ namespace RockWeb.Blocks.Reporting
                     return;
                 }
 
-                
                 Type entityType = EntityTypeCache.Read( report.EntityTypeId.Value, rockContext ).GetEntityType();
 
                 bool isPersonDataSet = report.EntityTypeId == EntityTypeCache.Read( typeof( Rock.Model.Person ), true, rockContext ).Id;
@@ -917,6 +935,7 @@ namespace RockWeb.Blocks.Reporting
                             }
 
                             boundField.Visible = reportField.ShowInGrid;
+
                             // NOTE:  Additional formatting for attributes is done in the gReport_RowDataBound event
                             gReport.Columns.Add( boundField );
                         }
@@ -936,21 +955,20 @@ namespace RockWeb.Blocks.Reporting
                             }
 
                             columnField.HeaderText = string.IsNullOrWhiteSpace( reportField.ColumnHeaderText ) ? selectComponent.ColumnHeaderText : reportField.ColumnHeaderText;
-                            columnField.SortExpression = null;
+                            columnField.SortExpression = selectComponent.SortExpression;
                             columnField.Visible = reportField.ShowInGrid;
                             gReport.Columns.Add( columnField );
                         }
                     }
                 }
 
-
                 // if no fields are specified, show the default fields (Previewable/All) for the EntityType
-                var dataColumns = gReport.Columns.OfType<object>().Where(a => a.GetType() != typeof(SelectField));
-                if (dataColumns.Count() == 0)
+                var dataColumns = gReport.Columns.OfType<object>().Where( a => a.GetType() != typeof( SelectField ) );
+                if ( dataColumns.Count() == 0 )
                 {
                     // show either the Previewable Columns or all (if there are no previewable columns)
                     bool showAllColumns = !entityFields.Any( a => a.FieldKind == FieldKind.Property && a.IsPreviewable );
-                    foreach ( var entityField in entityFields.Where(a => a.FieldKind == FieldKind.Property) ) 
+                    foreach ( var entityField in entityFields.Where( a => a.FieldKind == FieldKind.Property ) )
                     {
                         columnIndex++;
                         selectedEntityFields.Add( columnIndex, entityField );
@@ -976,16 +994,41 @@ namespace RockWeb.Blocks.Reporting
                 try
                 {
                     gReport.ExportFilename = report.Name;
+                    rockContext.Database.CommandTimeout = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180;
                     gReport.DataSource = report.GetDataSource( rockContext, entityType, selectedEntityFields, selectedAttributes, selectedComponents, gReport.SortProperty, out errors );
                     gReport.DataBind();
                 }
                 catch ( Exception ex )
                 {
-                    errors.Add( ex.Message );
+                    Exception exception = ex;
+                    while ( exception != null )
+                    {
+                        if ( exception is System.Data.SqlClient.SqlException )
+                        {
+                            // if there was a SQL Server Timeout, have the warning be a friendly message about that.
+                            if ( ( exception as System.Data.SqlClient.SqlException ).Number == -2 )
+                            {
+                                nbEditModeMessage.NotificationBoxType = NotificationBoxType.Warning;
+                                nbEditModeMessage.Text = "This report did not complete in a timely manner. You can try again or adjust the timeout setting of this block.";
+                                return;
+                            }
+                            else
+                            {
+                                errors.Add( exception.Message );
+                                exception = exception.InnerException;
+                            }
+                        }
+                        else
+                        {
+                            errors.Add( exception.Message );
+                            exception = exception.InnerException;
+                        }
+                    }
                 }
 
                 if ( errors.Any() )
                 {
+                    nbEditModeMessage.NotificationBoxType = NotificationBoxType.Warning;
                     nbEditModeMessage.Text = "INFO: There was a problem with one or more of the report's data components...<br/><br/> " + errors.AsDelimited( "<br/>" );
                 }
             }

@@ -56,7 +56,9 @@ namespace Rock.Reporting
             var entityFields = new List<EntityField>();
 
             var entityProperties = entityType.GetProperties().ToList();
-            var filteredEntityProperties = entityProperties.Where( p => !p.GetGetMethod().IsVirtual || p.Name == "Id" || p.Name == "Guid" || p.Name == "Order" ).ToList();
+            var filteredEntityProperties = entityProperties.Where( p => !p.GetGetMethod().IsVirtual 
+                || p.GetCustomAttributes( typeof( IncludeForReportingAttribute ), true ).Any() 
+                || p.Name == "Order" ).ToList();
 
             // Get Properties
             foreach ( var property in filteredEntityProperties )
@@ -71,7 +73,7 @@ namespace Rock.Reporting
                 }
 
                 // Boolean properties
-                if ( property.PropertyType == typeof( bool ) || property.PropertyType == typeof( bool? ) )
+                else if ( property.PropertyType == typeof( bool ) || property.PropertyType == typeof( bool? ) )
                 {
                     entityProperty = new EntityField( property.Name, FieldKind.Property, property.PropertyType, 1 );
                     entityProperty.FilterFieldType = SystemGuid.FieldType.SINGLE_SELECT;

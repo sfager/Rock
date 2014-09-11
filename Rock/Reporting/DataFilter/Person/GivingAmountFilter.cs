@@ -127,12 +127,13 @@ function() {
                     accountNames = new FinancialAccountService( new RockContext() ).GetByGuids( accountGuids ).Select( a => a.Name ).ToList().AsDelimited( "," );
                 }
 
-                result = string.Format( 
-                    "Giving amount total {0} {1} {2} between {3} and {4}", 
-                    comparisonType.ConvertToString().ToLower(), 
-                    amount.ToString( "C" ), 
-                    !string.IsNullOrWhiteSpace(accountNames) ? " to accounts:" + accountNames : string.Empty ,
-                    startDate.ToShortDateString(), endDate.ToShortDateString() );
+                result = string.Format(
+                    "Giving amount total {0} {1} {2} between {3} and {4}",
+                    comparisonType.ConvertToString().ToLower(),
+                    amount.ToString( "C" ),
+                    !string.IsNullOrWhiteSpace( accountNames ) ? " to accounts:" + accountNames : string.Empty,
+                    startDate.ToShortDateString(),
+                    endDate.ToShortDateString() );
             }
 
             return result;
@@ -144,7 +145,7 @@ function() {
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            var comparisonControl = this.ComparisonControl( ComparisonType.LessThan | ComparisonType.GreaterThanOrEqualTo );
+            var comparisonControl = ComparisonHelper.ComparisonControl( ComparisonType.LessThan | ComparisonType.GreaterThanOrEqualTo | ComparisonType.EqualTo );
             comparisonControl.ID = filterControl.ID + "_0";
             filterControl.Controls.Add( comparisonControl );
 
@@ -164,7 +165,6 @@ function() {
             accountPicker.AddCssClass( "js-account-picker" );
             accountPicker.Label = "Accounts";
             filterControl.Controls.Add( accountPicker );
-
 
             DateRangePicker dateRangePicker = new DateRangePicker();
             dateRangePicker.ID = filterControl.ID + "_2";
@@ -244,7 +244,7 @@ function() {
                 dateRangePicker.LowerValue = selectionValues[2].AsDateTime();
                 dateRangePicker.UpperValue = selectionValues[3].AsDateTime();
 
-                if (selectionValues.Length >= 5)
+                if ( selectionValues.Length >= 5 )
                 {
                     var accountGuids = selectionValues[4].Split( ',' ).Select( a => a.AsGuid() ).ToList();
                     var accounts = new FinancialAccountService( new RockContext() ).GetByGuids( accountGuids );
@@ -279,17 +279,19 @@ function() {
             DateTime startDate = selectionValues[2].AsDateTime() ?? DateTime.MinValue;
             DateTime endDate = selectionValues[3].AsDateTime() ?? DateTime.MaxValue;
             var accountIdList = new List<int>();
-            if (selectionValues.Length >= 5)
+            if ( selectionValues.Length >= 5 )
             {
                 var accountGuids = selectionValues[4].Split( ',' ).Select( a => a.AsGuid() ).ToList();
                 accountIdList = new FinancialAccountService( (RockContext)serviceInstance.Context ).GetByGuids( accountGuids ).Select( a => a.Id ).ToList();
             }
 
             bool limitToAccounts = accountIdList.Any();
+            int transactionTypeContributionId = Rock.Web.Cache.DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid()).Id;
 
             var financialTransactionQry = new FinancialTransactionService( rockContext ).Queryable()
+                .Where( xx => xx.TransactionTypeValueId == transactionTypeContributionId )
                 .Where( xx => xx.TransactionDateTime >= startDate && xx.TransactionDateTime < endDate )
-                .Where( xx => !limitToAccounts || xx.TransactionDetails.Any(d => accountIdList.Contains( d.AccountId) ))
+                .Where( xx => !limitToAccounts || xx.TransactionDetails.Any( d => accountIdList.Contains( d.AccountId ) ) )
                 .GroupBy( xx => ( xx.AuthorizedPersonAlias != null ? xx.AuthorizedPersonAlias.PersonId : 0 ) ).Select( xx =>
                     new
                     {
@@ -301,7 +303,11 @@ function() {
             {
                 financialTransactionQry = financialTransactionQry.Where( xx => xx.TotalAmount < amount );
             }
-            else
+            else if ( comparisonType == ComparisonType.EqualTo )
+            {
+                financialTransactionQry = financialTransactionQry.Where( xx => xx.TotalAmount == amount );
+            }
+            else if ( comparisonType == ComparisonType.GreaterThanOrEqualTo )
             {
                 financialTransactionQry = financialTransactionQry.Where( xx => xx.TotalAmount >= amount );
             }

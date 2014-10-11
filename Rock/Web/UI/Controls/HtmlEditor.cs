@@ -187,12 +187,17 @@ namespace Rock.Web.UI.Controls
             /// <summary>
             /// A lighter more airy view
             /// </summary>
-            Light,
+            Light = 0,
 
             /// <summary>
             /// The full monty
             /// </summary>
-            Full
+            Full = 1,
+
+            /// <summary>
+            /// Full, pluss font, fontsize, color, background color
+            /// </summary>
+            Extended = 2,
         }
 
         /// <summary>

@@ -22,12 +22,33 @@
                     ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'],
                     ['Find', 'Replace', '-', 'Scayt'],
                     ['Link', 'Unlink', 'Anchor'],
-                    ['Styles', 'Format'],
+                    ['Styles'],
+                    ['Format'],
                     '/',
                     ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat'],
-                    ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote', 'CreateDiv', '-'],
-                    ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
-                    ['-', 'Table'],
+                    ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote'],
+                    ['Table'],
+                    ['rockmergefield', '-', 'rockimagebrowser', 'rockdocumentbrowser']
+                ],
+
+            // the toolbar items to include in the HtmlEditor when Toolbar is set to Extended 
+            toolbar_RockCustomConfigExtended:
+                [
+                    ['Source'],
+                    ['Cut', 'Copy', 'Paste', 'PasteText', 'PasteFromWord', '-', 'Undo', 'Redo'],
+                    ['Find', 'Replace', '-', 'Scayt'],
+                    ['Link', 'Unlink', 'Anchor'],
+                    ['Styles'],
+                    ['Format'],
+                    '/',
+                    ['Bold', 'Italic', 'Underline', 'Strike', 'Subscript', 'Superscript', '-', 'RemoveFormat'],
+					['Font'],
+                    ['FontSize'],
+                    ['TextColor'], 
+                    ['BGColor'],
+                    '/',
+                    ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Blockquote'],
+                    ['Table'],
                     ['rockmergefield', '-', 'rockimagebrowser', 'rockdocumentbrowser']
                 ]
         }

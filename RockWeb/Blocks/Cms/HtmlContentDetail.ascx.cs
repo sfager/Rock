@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
@@ -51,7 +52,7 @@ namespace RockWeb.Blocks.Cms
     [TextField( "Context Name", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false, "", "", 6 )]
     [BooleanField( "Enable Versioning", "If checked, previous versions of the content will be preserved. Versioning is required if you want to require approval.", false, "", 7, "SupportVersions" )]
     [BooleanField( "Require Approval", "Require that content be approved?", false, "", 8 )]
-
+    [EnumField( "Editor Toolbar Mode", "The toolbar mode to display when editing content.", typeof(Rock.Web.UI.Controls.HtmlEditor.ToolbarConfig), true, "1", "", 9)]
     [ContextAware]
     public partial class HtmlContentDetail : RockBlock
     {
@@ -143,7 +144,7 @@ namespace RockWeb.Blocks.Cms
             ceHtml.Visible = useCodeEditor;
             htmlEditor.Visible = !useCodeEditor;
 
-            htmlEditor.Toolbar = HtmlEditor.ToolbarConfig.Full;
+            htmlEditor.Toolbar = GetAttributeValue( "EditorToolbarMode" ).ConvertToEnum<HtmlEditor.ToolbarConfig>( HtmlEditor.ToolbarConfig.Full );
 
             // if the current user can't approve their own edits, set the approval to Not-Approved when they change something
             if ( !IsUserAuthorized( "Approve" ) )

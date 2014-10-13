@@ -25,12 +25,11 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using DotLiquid;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Field.Types;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -224,8 +223,10 @@ $(document).ready(function() {
             ceQuery.Text = GetAttributeValue( "Template" );
             nbCount.Text = GetAttributeValue( "Count" );
             nbCacheDuration.Text = GetAttributeValue( "CacheDuration" );
-
             hfDataFilterId.Value = GetAttributeValue( "FilterId" );
+
+            var ppFieldType = new PageReferenceFieldType();
+            ppFieldType.SetEditValue( ppDetailPage, null, GetAttributeValue( "DetailPage" ) );
 
             var directions = new Dictionary<string, string>();
             directions.Add( SortDirection.Ascending.ConvertToInt().ToString(), "Ascending" );
@@ -298,6 +299,10 @@ $(document).ready(function() {
             SetAttributeValue( "RssAutodiscover", cbSetRssAutodiscover.Checked.ToString() );
             SetAttributeValue( "MetaDescriptionAttribute", ddlMetaDescriptionAttribute.SelectedValue );
             SetAttributeValue( "MetaImageAttribute", ddlMetaImageAttribute.SelectedValue );
+
+            var ppFieldType = new PageReferenceFieldType();
+            SetAttributeValue( "DetailPage", ppFieldType.GetEditValue( ppDetailPage, null ) );
+
             SaveAttributeValues();
 
             FlushCacheItem( CONTENT_CACHE_KEY );
@@ -652,8 +657,6 @@ $(document).ready(function() {
                             }
                         }
 
-                        return items;
-
                     }
                 }
 
@@ -880,7 +883,22 @@ $(document).ready(function() {
                 filterControl.ID = string.Format( "ff_{0}", filterControl.DataViewFilterGuid.ToString( "N" ) );
                 filterControl.FilteredEntityTypeName = ITEM_TYPE_NAME;
 
-
+                // Remove the 'Other Data View' Filter as it doesn't really make sense to have it available in this scenario
+                string itemKey = "FilterFieldComponents:" + ITEM_TYPE_NAME;
+                if ( HttpContext.Current.Items.Contains( itemKey ) )
+                {
+                    var filterComponents = HttpContext.Current.Items[itemKey] as Dictionary<string, Dictionary<string, string>>;
+                    if (filterComponents != null)
+                    {
+                        foreach( var section in filterComponents )
+                        {
+                            if (  section.Value.ContainsKey("Rock.Reporting.DataFilter.OtherDataViewFilter"))
+                            {
+                                section.Value.Remove( "Rock.Reporting.DataFilter.OtherDataViewFilter" );
+                            }
+                        }
+                    }
+                }
 
                 if ( filter.EntityTypeId.HasValue )
                 {

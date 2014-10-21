@@ -61,7 +61,7 @@ namespace Rock.Communication.Transport
                 ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
             {
                 string fromPhone = string.Empty;
-                string fromValue = communication.GetChannelDataValue( "FromValue" );
+                string fromValue = communication.GetMediumDataValue( "FromValue" );
                 int fromValueId = int.MinValue;
                 if ( int.TryParse( fromValue, out fromValueId ) )
                 {
@@ -74,7 +74,12 @@ namespace Rock.Communication.Transport
                     string authToken = GetAttributeValue( "Token" );
                     var twilio = new TwilioRestClient( accountSid, authToken );
 
+                    var historyService = new HistoryService( rockContext );
                     var recipientService = new CommunicationRecipientService( rockContext );
+
+                    var personEntityTypeId = EntityTypeCache.Read( "Rock.Model.Person" ).Id;
+                    var communicationEntityTypeId = EntityTypeCache.Read( "Rock.Model.Communication" ).Id;
+                    var communicationCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), rockContext ).Id;
 
                     var globalConfigValues = GlobalAttributesCache.GetMergeFields( null );
 
@@ -94,7 +99,7 @@ namespace Rock.Communication.Transport
                                 {
                                     // Create merge field dictionary
                                     var mergeObjects = recipient.CommunicationMergeValues( globalConfigValues );
-                                    string message = communication.GetChannelDataValue( "Message" );
+                                    string message = communication.GetMediumDataValue( "Message" );
                                     message = message.ResolveMergeFields( mergeObjects );
  
                                     string twilioNumber = phoneNumber.Number;
@@ -107,7 +112,20 @@ namespace Rock.Communication.Transport
 
                                     recipient.Status = CommunicationRecipientStatus.Delivered;
                                     recipient.TransportEntityTypeName = this.GetType().FullName;
-                                    recipient.UniqueMessageId = response.Sid; 
+                                    recipient.UniqueMessageId = response.Sid;
+
+                                    historyService.Add( new History
+                                    {
+                                        CreatedByPersonAliasId = communication.SenderPersonAliasId,
+                                        EntityTypeId = personEntityTypeId,
+                                        CategoryId = communicationCategoryId,
+                                        EntityId = recipient.PersonAlias.PersonId,
+                                        Summary = "Sent SMS message.",
+                                        Caption = message,
+                                        RelatedEntityTypeId = communicationEntityTypeId,
+                                        RelatedEntityId = communication.Id
+                                    } );
+                                
                                 }
                                 else
                                 {
@@ -146,14 +164,14 @@ namespace Rock.Communication.Transport
         }
 
         /// <summary>
-        /// Sends the specified channel data to the specified list of recipients.
+        /// Sends the specified medium data to the specified list of recipients.
         /// </summary>
-        /// <param name="channelData">The channel data.</param>
+        /// <param name="mediumData">The medium data.</param>
         /// <param name="recipients">The recipients.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override void Send(Dictionary<string, string> channelData, List<string> recipients, string appRoot, string themeRoot)
+        public override void Send(Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot)
         {
             try
             {
@@ -161,7 +179,7 @@ namespace Rock.Communication.Transport
 
                 string fromPhone = string.Empty;
                 string fromValue = string.Empty;
-                channelData.TryGetValue( "FromValue", out fromValue );
+                mediumData.TryGetValue( "FromValue", out fromValue );
                 if (!string.IsNullOrWhiteSpace(fromValue))
                 {
                     fromPhone = DefinedValueCache.Read( fromValue.AsInteger() ).Value;
@@ -172,7 +190,7 @@ namespace Rock.Communication.Transport
                         var twilio = new TwilioRestClient( accountSid, authToken );
 
                         string message = string.Empty;
-                        channelData.TryGetValue( "Message", out message );
+                        mediumData.TryGetValue( "Message", out message );
 
                         if ( !string.IsNullOrWhiteSpace( themeRoot ) )
                         {

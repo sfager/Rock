@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block that reports transactions for the currently logged in user with filters." )]
     [TextField( "Transaction Label", "The label to use to describe the transactions (e.g. 'Gifts', 'Donations', etc.)", true, "Gifts", "", 1 )]
-    [TextField("Account Label", "The label to use to describe accounts (e.g. 'Accounts', 'Funds', etc.)", true, "Funds", "", 2)]
+    [TextField("Account Label", "The label to use to describe accounts.", true, "Accounts", "", 2)]
     [AccountsField("Accounts", "List of accounts to allow the person to view", false, "", "", 3)]
     public partial class TransactionReport : Rock.Web.UI.RockBlock
     {
@@ -156,7 +156,7 @@ namespace RockWeb.Blocks.Finance
 
             foreach ( var account in accounts.ToList() )
             {
-                ListItem checkbox = new ListItem(account.Name, account.Id.ToString(), true);
+                ListItem checkbox = new ListItem(account.PublicName, account.Id.ToString(), true);
                 checkbox.Selected = true;
 
                 cblAccounts.Items.Add( checkbox );

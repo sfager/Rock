@@ -48,9 +48,6 @@
     <Reference Include="DDay.iCal">
       <HintPath>..\packages\DDay.iCal.1.0.2.575\lib\DDay.iCal.dll</HintPath>
     </Reference>
-    <Reference Include="DotLiquid">
-      <HintPath>..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
-    </Reference>
     <Reference Include="EntityFramework">
       <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
@@ -65,6 +62,9 @@
     </Reference>
     <Reference Include="HtmlAgilityPack">
       <HintPath>..\packages\HtmlAgilityPack.1.4.6\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    </Reference>
+    <Reference Include="Humanizer">
+      <HintPath>..\packages\Humanizer.1.29.0\lib\portable-win+net40+sl50+wp8+wpa81\Humanizer.dll</HintPath>
     </Reference>
     <Reference Include="ImageResizer, Version=3.4.3.103, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -157,6 +157,8 @@
     <Compile Include="Address\Bing.cs" />
     <Compile Include="Attribute\CurrencyFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeFieldAttribute.cs" />
+    <Compile Include="Attribute\ContentChannelFieldAttribute.cs" />
+    <Compile Include="Attribute\EnumsFieldAttribute.cs" />
     <Compile Include="Attribute\EnumFieldAttribute.cs" />
     <Compile Include="Attribute\SchedulesFieldAttribute.cs" />
     <Compile Include="Attribute\UrlLinkFieldAttribute.cs" />
@@ -229,6 +231,7 @@
     <Compile Include="Field\IEntityFieldType.cs" />
     <Compile Include="Field\Types\CurrencyFieldType.cs" />
     <Compile Include="Field\Types\AttributeFieldType.cs" />
+    <Compile Include="Field\Types\ContentChannelFieldType.cs" />
     <Compile Include="Field\Types\SchedulesFieldType.cs" />
     <Compile Include="Field\Types\UrlLinkFieldType.cs" />
     <Compile Include="Field\Types\GroupTypeGroupFieldType.cs" />
@@ -245,10 +248,22 @@
     <Compile Include="Field\Types\WorkflowTypesFieldType.cs" />
     <Compile Include="Financial\TestGateway.cs" />
     <Compile Include="Jobs\GetScheduledPayments.cs" />
+    <Compile Include="Model\CodeGenerated\ContentChannelService.cs" />
+    <Compile Include="Model\CodeGenerated\ContentChannelItemService.cs" />
+    <Compile Include="Model\CodeGenerated\ContentChannelTypeService.cs" />
     <Compile Include="Model\CodeGenerated\EntitySetItemService.cs" />
     <Compile Include="Model\CodeGenerated\EntitySetService.cs" />
     <Compile Include="Model\CodeGenerated\PersonDuplicateService.cs" />
     <Compile Include="Model\CodeGenerated\PluginMigrationService.cs" />
+    <Compile Include="Model\ContentChannel.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\ContentChannelItem.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Model\ContentChannelType.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Model\EntitySetItemService.Partial.cs" />
     <Compile Include="Model\FinancialBatchService.Partial.cs" />
     <Compile Include="Model\EntitySet.cs" />
@@ -269,6 +284,7 @@
     <Compile Include="Reporting\DataSelect\FinancialTransaction\TotalAmountSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\PersonLinkSelect.cs" />
     <Compile Include="Reporting\DataSelect\Person\TotalGivingAmountSelect.cs" />
+    <Compile Include="Services\NuGet\RockProjectManager.cs" />
     <Compile Include="Web\Cache\RockMemoryCache.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartClickArgs.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
@@ -482,10 +498,10 @@
     <Compile Include="CheckIn\KioskLocation.cs" />
     <Compile Include="CheckIn\KioskSchedule.cs" />
     <Compile Include="CheckIn\KioskDevice.cs" />
-    <Compile Include="Communication\ChannelComponent.cs" />
-    <Compile Include="Communication\Channel\Sms.cs" />
-    <Compile Include="Communication\Channel\Email.cs" />
-    <Compile Include="Communication\ChannelContainer.cs" />
+    <Compile Include="Communication\MediumComponent.cs" />
+    <Compile Include="Communication\Medium\Sms.cs" />
+    <Compile Include="Communication\Medium\Email.cs" />
+    <Compile Include="Communication\MediumContainer.cs" />
     <Compile Include="Communication\TransportComponent.cs" />
     <Compile Include="Communication\TransportContainer.cs" />
     <Compile Include="Communication\Transport\SMTP.cs" />
@@ -552,11 +568,6 @@
     <Compile Include="Model\CodeGenerated\FinancialTransactionService.cs" />
     <Compile Include="Model\CodeGenerated\GroupLocationService.cs" />
     <Compile Include="Model\CodeGenerated\HtmlContentService.cs" />
-    <Compile Include="Model\CodeGenerated\MarketingCampaignAdService.cs" />
-    <Compile Include="Model\CodeGenerated\MarketingCampaignAdTypeService.cs" />
-    <Compile Include="Model\CodeGenerated\MarketingCampaignAudienceService.cs" />
-    <Compile Include="Model\CodeGenerated\MarketingCampaignCampusService.cs" />
-    <Compile Include="Model\CodeGenerated\MarketingCampaignService.cs" />
     <Compile Include="Model\CodeGenerated\NoteService.cs" />
     <Compile Include="Model\CodeGenerated\NoteTypeService.cs" />
     <Compile Include="Model\CodeGenerated\PageContextService.cs" />
@@ -583,19 +594,11 @@
     <Compile Include="Model\FinancialTransactionService.Partial.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\MarketingCampaignAdTypeService.partial.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Model\PrayerRequestService.partial.cs" />
     <Compile Include="Model\DataView.cs" />
     <Compile Include="Model\DataViewFilter.cs" />
     <Compile Include="Model\Report.cs" />
     <Compile Include="Model\GroupLocationService.Partial.cs" />
-    <Compile Include="Model\MarketingCampaign.cs" />
-    <Compile Include="Model\MarketingCampaignAd.cs" />
-    <Compile Include="Model\MarketingCampaignAdType.cs" />
-    <Compile Include="Model\MarketingCampaignAudience.cs" />
-    <Compile Include="Model\MarketingCampaignCampus.cs" />
     <Compile Include="Model\Note.cs" />
     <Compile Include="Model\NoteService.Partial.cs" />
     <Compile Include="Model\NoteType.cs" />
@@ -645,6 +648,7 @@
     <Compile Include="Web\UI\Controls\NewFamily\ContactInfoRow.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\ContactInfo.cs" />
     <Compile Include="Web\UI\Controls\Pickers\SchedulePicker.cs" />
+    <Compile Include="Web\UI\Controls\RockRadioButton.cs" />
     <Compile Include="Web\UI\Controls\UrlLinkBox.cs" />
     <Compile Include="Web\UI\Controls\EmailBox.cs" />
     <Compile Include="Web\UI\Controls\Chart\BarChart.cs" />
@@ -1159,6 +1163,12 @@
   <ItemGroup>
     <Folder Include="Auth\" />
     <Folder Include="Workflow\Attribute\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
+      <Project>{cb9372cd-9c1d-47ab-92d8-702d4d68324f}</Project>
+      <Name>DotLiquid</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

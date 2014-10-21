@@ -19,6 +19,7 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Web;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -68,19 +69,19 @@ namespace Rock.Model
         /// <summary>
         /// Determines the storage provider that was used the last time the file was saved
         /// </summary>
-        /// <param name="dbContext">The database context.</param>
+        /// <param name="rockContext">The rock context.</param>
         /// <param name="item">The item.</param>
         /// <returns></returns>
-        public static Storage.ProviderComponent DetermineBinaryFileStorageProvider( Rock.Data.RockContext dbContext, BinaryFile item )
+        public static Storage.ProviderComponent DetermineBinaryFileStorageProvider( Rock.Data.RockContext rockContext, BinaryFile item )
         {
             Rock.Storage.ProviderComponent storageProvider = null;
 
-            if ( item != null )
+            if ( item != null && item.StorageEntityTypeId.HasValue)
             {
-                item.StorageEntityType = item.StorageEntityType ?? new EntityTypeService( dbContext ).Get( item.StorageEntityTypeId ?? 0 );
-                if ( item.StorageEntityType != null )
+                var storageEntityType = EntityTypeCache.Read( item.StorageEntityTypeId.Value, rockContext );
+                if ( storageEntityType != null )
                 {
-                    storageProvider = Rock.Storage.ProviderContainer.GetComponent( item.StorageEntityType.Name );
+                    storageProvider = Rock.Storage.ProviderContainer.GetComponent( storageEntityType.Name );
                 }
             }
 
@@ -150,8 +151,8 @@ namespace Rock.Model
         /// <returns></returns>
         public BinaryFile EndGet( IAsyncResult asyncResult, HttpContext context)
         {
-            bool requiresSecurity;
-            return EndGet( asyncResult, context, out requiresSecurity );
+            bool requiresViewSecurity;
+            return EndGet( asyncResult, context, out requiresViewSecurity );
         }
 
         /// <summary>
@@ -159,9 +160,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="asyncResult">The asynchronous result.</param>
         /// <param name="context">The context.</param>
-        /// <param name="requiresSecurity">if set to <c>true</c> [requires security].</param>
+        /// <param name="requiresViewSecurity">if set to <c>true</c> [requires security].</param>
         /// <returns></returns>
-        public BinaryFile EndGet( IAsyncResult asyncResult, HttpContext context, out bool requiresSecurity )
+        public BinaryFile EndGet( IAsyncResult asyncResult, HttpContext context, out bool requiresViewSecurity )
         {
             // restore the command from the context
             SqlCommand cmd = (SqlCommand)context.Items["cmd"];
@@ -177,9 +178,8 @@ namespace Rock.Model
                 binaryFile.IsSystem = (bool)reader["IsSystem"];
                 binaryFile.BinaryFileTypeId = reader["BinaryFileTypeId"] as int?;
 
-                // return requiresSecurity to let caller know that security needs to be checked on this binaryFile
-                requiresSecurity = (bool)reader["RequiresSecurity"];
-                
+                // return requiresViewSecurity to let caller know that security needs to be checked on this binaryFile before viewing
+                requiresViewSecurity = (bool)reader["RequiresViewSecurity"];
                 
                 binaryFile.Url = reader["Url"] as string;
                 binaryFile.FileName = reader["FileName"] as string;

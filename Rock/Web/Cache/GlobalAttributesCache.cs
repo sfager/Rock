@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
+using System.Web;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -32,6 +33,26 @@ namespace Rock.Web.Cache
     [Serializable]
     public class GlobalAttributesCache
     {
+
+        #region Contants
+
+        /// <summary>
+        /// This setting is the guid for the organization's location record.
+        /// </summary>
+        private static readonly string ORG_LOC_GUID = "com.rockrms.orgLocationGuid";
+        
+        /// <summary>
+        /// This setting is the state for the organization's location record.
+        /// </summary>
+        private static readonly string ORG_LOC_STATE = "com.rockrms.orgLocationState";
+
+        /// <summary>
+        /// This setting is the country for the organization's location record.
+        /// </summary>
+        private static readonly string ORG_LOC_COUNTRY = "com.rockrms.orgLocationCountry";
+
+        #endregion
+
         #region Constructors
 
         /// <summary>
@@ -57,7 +78,15 @@ namespace Rock.Web.Cache
         /// <value>
         /// The attribute values.
         /// </value>
-        public Dictionary<string, KeyValuePair<string, string>> AttributeValues { get; set; }
+        public Dictionary<string, string> AttributeValues { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attribute values formatted.
+        /// </summary>
+        /// <value>
+        /// The attribute values formatted.
+        /// </value>
+        public Dictionary<string, string> AttributeValuesFormatted { get; set; }
 
         #endregion
 
@@ -73,7 +102,7 @@ namespace Rock.Web.Cache
         {
             if ( AttributeValues.Keys.Contains( key ) )
             {
-                return AttributeValues[key].Value;
+                return AttributeValues[key];
             }
             else
             {
@@ -82,12 +111,42 @@ namespace Rock.Web.Cache
                 {
                     var attributeValue = new AttributeValueService( rockContext ?? new RockContext() ).GetByAttributeIdAndEntityId( attributeCache.Id, null );
                     string value = ( attributeValue != null && !string.IsNullOrEmpty( attributeValue.Value ) ) ? attributeValue.Value : attributeCache.DefaultValue;
-                    AttributeValues.Add( attributeCache.Key, new KeyValuePair<string, string>( attributeCache.Name, value ) );
+                    AttributeValues.Add( key, value );
 
                     return value;
                 }
 
                 return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Gets the value formatted.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public string GetValueFormatted( string key, RockContext rockContext = null )
+        {
+            if ( AttributeValuesFormatted.Keys.Contains( key ) )
+            {
+                return AttributeValuesFormatted[key];
+            }
+            else
+            {
+                string value = GetValue( key, rockContext );
+                if ( !string.IsNullOrWhiteSpace( value ) )
+                {
+                    var attributeCache = Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
+                    if ( attributeCache != null )
+                    {
+                        value = attributeCache.FieldType.Field.FormatValue( null, value, attributeCache.QualifierValues, false );
+                    }
+                }
+
+                AttributeValuesFormatted.Add( key, value );
+
+                return value;
             }
         }
 
@@ -130,32 +189,24 @@ namespace Rock.Web.Cache
                     }
 
                     attributeValue = new AttributeValue();
-                    attributeValueService.Add( attributeValue );
                     attributeValue.IsSystem = false;
                     attributeValue.AttributeId = attribute.Id;
-
-                    if ( !AttributeValues.Keys.Contains( key ) )
-                    {
-                        AttributeValues.Add( key, new KeyValuePair<string, string>( attribute.Name, value ) );
-                    }
+                    attributeValueService.Add( attributeValue );
                 }
 
                 attributeValue.Value = value;
                 rockContext.SaveChanges();
             }
 
+            AttributeValues.AddOrReplace( key, value);
+
             var attributeCache = Attributes.FirstOrDefault( a => a.Key.Equals( key, StringComparison.OrdinalIgnoreCase ) );
-            if ( attributeCache != null ) // (Should never be null)
+            if ( attributeCache != null )
             {
-                if ( AttributeValues.Keys.Contains( key ) )
-                {
-                    AttributeValues[key] = new KeyValuePair<string, string>( attributeCache.Name, value );
-                }
-                else
-                {
-                    AttributeValues.Add( key, new KeyValuePair<string, string>( attributeCache.Name, value ) );
-                }
+                value = attributeCache.FieldType.Field.FormatValue( null, value, attributeCache.QualifierValues, false );
             }
+            AttributeValuesFormatted.AddOrReplace( key, value );
+
         }
 
         #endregion
@@ -187,20 +238,29 @@ namespace Rock.Web.Cache
             {
                 globalAttributes = new GlobalAttributesCache();
                 globalAttributes.Attributes = new List<AttributeCache>();
-                globalAttributes.AttributeValues = new Dictionary<string, KeyValuePair<string, string>>();
+                globalAttributes.AttributeValues = new Dictionary<string, string>();
+                globalAttributes.AttributeValuesFormatted = new Dictionary<string, string>();
 
                 rockContext = rockContext ?? new RockContext();
                 var attributeService = new Rock.Model.AttributeService( rockContext );
                 var attributeValueService = new Rock.Model.AttributeValueService( rockContext );
 
-                foreach ( Rock.Model.Attribute attribute in attributeService.GetGlobalAttributes() )
+                var attributes = attributeService.GetGlobalAttributes();
+                var attributeValues = attributeValueService.Queryable()
+                    .Where( v =>
+                        !v.EntityId.HasValue &&
+                        attributes.Select( a => a.Id ).ToList().Contains( v.AttributeId ) )
+                    .ToList();
+
+                foreach ( var attribute in attributes )
                 {
                     var attributeCache = AttributeCache.Read( attribute );
                     globalAttributes.Attributes.Add( attributeCache );
 
-                    var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, null );
+                    var attributeValue = attributeValues.FirstOrDefault( v => v.AttributeId == attribute.Id);
                     string value = ( attributeValue != null && !string.IsNullOrEmpty( attributeValue.Value ) ) ? attributeValue.Value : attributeCache.DefaultValue;
-                    globalAttributes.AttributeValues.Add( attributeCache.Key, new KeyValuePair<string, string>( attributeCache.Name, value ) );
+                    globalAttributes.AttributeValues.Add( attributeCache.Key, value );
+                    globalAttributes.AttributeValuesFormatted.Add( attributeCache.Key, attributeCache.FieldType.Field.FormatValue( null, value, attributeCache.QualifierValues, false ) );
                 }
 
                 cache.Set( cacheKey, globalAttributes, new CacheItemPolicy() );
@@ -216,6 +276,14 @@ namespace Rock.Web.Cache
         {
             ObjectCache cache = RockMemoryCache.Default;
             cache.Remove( GlobalAttributesCache.CacheKey() );
+
+            if ( HttpContext.Current != null )
+            {
+                var appSettings = HttpContext.Current.Application;
+                appSettings[ORG_LOC_GUID] = null;
+                appSettings[ORG_LOC_STATE] = null;
+                appSettings[ORG_LOC_COUNTRY] = null;
+            }
         }
 
         /// <summary>
@@ -234,8 +302,7 @@ namespace Rock.Web.Cache
             {
                 if ( attributeCache.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 {
-                    string value = attributeCache.FieldType.Field.FormatValue( null, globalAttributes.AttributeValues[attributeCache.Key].Value, attributeCache.QualifierValues, false );
-                    globalAttributeValues.Add( attributeCache.Key, value );
+                    globalAttributeValues.Add( attributeCache.Key, globalAttributes.GetValueFormatted( attributeCache.Key ) );
                 }
             }
             configValues.Add( "GlobalAttribute", globalAttributeValues );
@@ -306,19 +373,35 @@ namespace Rock.Web.Cache
                 Guid? locGuid = GetValue( "OrganizationAddress" ).AsGuidOrNull();
                 if ( locGuid.HasValue )
                 {
-                    // If the organization location is still same as last check, use saved values
-                    if ( locGuid.Equals( Rock.Web.SystemSettings.GetValue( SystemSettingKeys.ORG_LOC_GUID ).AsGuid() ) )
+                    if ( HttpContext.Current != null )
                     {
-                        return Rock.Web.SystemSettings.GetValue( SystemSettingKeys.ORG_LOC_STATE );
+                        var appSettings = HttpContext.Current.Application;
+
+                        // If the organization location is still same as last check, use saved values
+                        if ( appSettings[ORG_LOC_GUID] != null &&
+                            locGuid.Equals( (Guid)appSettings[ORG_LOC_GUID] ) &&
+                            appSettings[ORG_LOC_STATE] != null )
+                        {
+                            return appSettings[ORG_LOC_STATE].ToString();
+                        }
+                        else
+                        {
+                            // otherwise read the new location and save
+                            appSettings[ORG_LOC_GUID] = locGuid.Value;
+                            var location = new Rock.Model.LocationService( new RockContext() ).Get( locGuid.Value );
+                            if ( location != null )
+                            {
+                                appSettings[ORG_LOC_STATE] = location.State;
+                                appSettings[ORG_LOC_COUNTRY] = location.Country;
+                                return location.State;
+                            }
+                        }
                     }
                     else
                     {
-                        // otherwise read the new location and save the state
-                        Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ORG_LOC_GUID, locGuid.ToString() );
                         var location = new Rock.Model.LocationService( new RockContext() ).Get( locGuid.Value );
                         if ( location != null )
                         {
-                            Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ORG_LOC_STATE, location.State );
                             return location.State;
                         }
                     }
@@ -343,19 +426,35 @@ namespace Rock.Web.Cache
                 Guid? locGuid = GetValue( "OrganizationAddress" ).AsGuidOrNull();
                 if ( locGuid.HasValue )
                 {
-                    // If the organization location is still same as last check, use saved values
-                    if ( locGuid.Equals( Rock.Web.SystemSettings.GetValue( SystemSettingKeys.ORG_LOC_GUID ).AsGuid() ) )
+                    if ( HttpContext.Current != null )
                     {
-                        return Rock.Web.SystemSettings.GetValue( SystemSettingKeys.ORG_LOC_COUNTRY );
+                        var appSettings = HttpContext.Current.Application;
+
+                        // If the organization location is still same as last check, use saved values
+                        if ( appSettings[ORG_LOC_GUID] != null &&
+                            locGuid.Equals( (Guid)appSettings[ORG_LOC_GUID] ) &&
+                            appSettings[ORG_LOC_COUNTRY] != null )
+                        {
+                            return appSettings[ORG_LOC_COUNTRY].ToString();
+                        }
+                        else
+                        {
+                            // otherwise read the new location and save 
+                            appSettings[ORG_LOC_GUID] = locGuid.Value;
+                            var location = new Rock.Model.LocationService( new RockContext() ).Get( locGuid.Value );
+                            if ( location != null )
+                            {
+                                appSettings[ORG_LOC_STATE] = location.State;
+                                appSettings[ORG_LOC_COUNTRY] = location.Country;
+                                return location.Country;
+                            }
+                        }
                     }
                     else
                     {
-                        // otherwise read the new location and save the country
-                        Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ORG_LOC_GUID, locGuid.ToString() );
                         var location = new Rock.Model.LocationService( new RockContext() ).Get( locGuid.Value );
                         if ( location != null )
                         {
-                            Rock.Web.SystemSettings.SetValue( SystemSettingKeys.ORG_LOC_COUNTRY, location.Country );
                             return location.Country;
                         }
                     }

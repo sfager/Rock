@@ -143,6 +143,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="images\rock-logo-sm.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="images\rock-logo.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -230,6 +234,7 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+
     <ProjectReference Include="..\..\..\..\Rock.Client\Rock.Client.csproj">
       <Project>{6ea64bb9-9740-453a-939b-df43ad9ac164}</Project>
       <Name>Rock.Client</Name>
@@ -269,7 +274,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>call "$(DevEnvDir)..\tools\vsvars32.bat"
-editbin.exe /NXCOMPAT:NO $(TargetPath)</PostBuildEvent>
+editbin.exe /NXCOMPAT:NO "$(TargetPath)"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Administration
 
             // Get Version, database info and executing assembly location
             lRockVersion.Text = VersionInfo.GetRockProductVersionFullName();
-            lServerCulture.Text = System.Globalization.CultureInfo.CurrentCulture.ToString();
+            lClientCulture.Text = System.Globalization.CultureInfo.CurrentCulture.ToString();
             lDatabase.Text = GetDbInfo();
             lExecLocation.Text = Assembly.GetExecutingAssembly().Location;
 
@@ -132,6 +132,9 @@ namespace RockWeb.Blocks.Administration
             {
                 Rock.Web.Cache.LayoutCache.Flush( id );
             }
+
+            Rock.Web.Cache.GlobalAttributesCache.Flush();
+            Rock.Web.SystemSettings.Flush();
 
             nbMessage.Visible = true;
             nbMessage.Text = "The cache has been cleared.";

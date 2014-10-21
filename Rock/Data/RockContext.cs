@@ -195,6 +195,30 @@ namespace Rock.Data
         public DbSet<Rock.Model.CommunicationTemplate> CommunicationTemplates { get; set; }
 
         /// <summary>
+        /// Gets or sets the content channels.
+        /// </summary>
+        /// <value>
+        /// The content channels.
+        /// </value>
+        public DbSet<ContentChannel> ContentChannels { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content channel items.
+        /// </summary>
+        /// <value>
+        /// The content channel items.
+        /// </value>
+        public DbSet<ContentChannelItem> ContentChannelItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content channel types.
+        /// </summary>
+        /// <value>
+        /// The content channel types.
+        /// </value>
+        public DbSet<ContentChannelType> ContentChannelTypes { get; set; }
+
+        /// <summary>
         /// Gets or sets the data views.
         /// </summary>
         /// <value>
@@ -278,7 +302,7 @@ namespace Rock.Data
         /// Gets or sets the accounts.
         /// </summary>
         /// <value>
-        /// The fund.
+        /// The Financial Account.
         /// </value>
         public DbSet<FinancialAccount> FinancialAccounts { get; set; }
 
@@ -441,46 +465,6 @@ namespace Rock.Data
         /// the Location.
         /// </value>
         public DbSet<Location> Locations { get; set; }
-
-        /// <summary>
-        /// Gets or sets the marketing campaigns.
-        /// </summary>
-        /// <value>
-        /// The marketing campaigns.
-        /// </value>
-        public DbSet<MarketingCampaign> MarketingCampaigns { get; set; }
-
-        /// <summary>
-        /// Gets or sets the marketing campaign ads.
-        /// </summary>
-        /// <value>
-        /// The marketing campaign ads.
-        /// </value>
-        public DbSet<MarketingCampaignAd> MarketingCampaignAds { get; set; }
-
-        /// <summary>
-        /// Gets or sets the marketing campaign ad types.
-        /// </summary>
-        /// <value>
-        /// The marketing campaign ad types.
-        /// </value>
-        public DbSet<MarketingCampaignAdType> MarketingCampaignAdTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the marketing campaign audiences.
-        /// </summary>
-        /// <value>
-        /// The marketing campaign audiences.
-        /// </value>
-        public DbSet<MarketingCampaignAudience> MarketingCampaignAudiences { get; set; }
-
-        /// <summary>
-        /// Gets or sets the marketing campaign campuses.
-        /// </summary>
-        /// <value>
-        /// The marketing campaign campuses.
-        /// </value>
-        public DbSet<MarketingCampaignCampus> MarketingCampaignCampuses { get; set; }
 
         /// <summary>
         /// Gets or sets the metaphones.

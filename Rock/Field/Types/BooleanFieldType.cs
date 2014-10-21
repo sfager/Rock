@@ -24,9 +24,8 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type used to display a list of options as checkboxes.  Value is saved as a | delimited list
+    /// Field Type used to save a boolean value. Stored as "True" or "False"
     /// </summary>
-    [Serializable]
     public class BooleanFieldType : FieldType
     {
         /// <summary>
@@ -40,8 +39,9 @@ namespace Rock.Field.Types
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
             string formattedValue = string.Empty;
+            bool boolValue = value.AsBooleanOrNull() ?? false;
 
-            if ( string.IsNullOrEmpty( value ) ? false : System.Boolean.Parse( value ) )
+            if ( boolValue )
             {
                 if ( condensed )
                 {
@@ -183,7 +183,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
+        /// Renders the controls necessary for prompting user for a new value and adds them to the parentControl
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>
@@ -236,9 +236,22 @@ namespace Rock.Field.Types
             {
                 if ( control != null && control is CheckBox )
                 {
-                    ( (CheckBox)control ).Checked = string.IsNullOrEmpty( value ) ? false : System.Boolean.Parse( value );
+                    ( (CheckBox)control ).Checked = value.AsBooleanOrNull() ?? false;
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets information about how to configure a filter UI for this type of field. Used primarily for dataviews
+        /// </summary>
+        /// <param name="attribute"></param>
+        /// <returns></returns>
+        public override Reporting.EntityField GetFilterConfig( Rock.Web.Cache.AttributeCache attribute )
+        {
+            var filterConfig = base.GetFilterConfig( attribute );
+            filterConfig.ControlCount = 1;
+            filterConfig.FilterFieldType = SystemGuid.FieldType.SINGLE_SELECT;
+            return filterConfig;
         }
     }
 }

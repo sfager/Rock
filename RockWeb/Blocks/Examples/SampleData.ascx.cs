@@ -34,6 +34,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using System.Globalization;
 
 namespace RockWeb.Blocks.Examples
 {
@@ -1028,6 +1029,7 @@ namespace RockWeb.Blocks.Examples
             PageViewService pageViewService = new PageViewService( rockContext );
             BinaryFileService binaryFileService = new BinaryFileService( rockContext );
             PersonAliasService personAliasService = new PersonAliasService( rockContext );
+            PersonDuplicateService personDuplicateService = new PersonDuplicateService( rockContext );
             NoteService noteService = new NoteService( rockContext );
             AuthService authService = new AuthService( rockContext );
             CommunicationService communicationService = new CommunicationService( rockContext );
@@ -1109,6 +1111,11 @@ namespace RockWeb.Blocks.Examples
                         // delete their aliases
                         foreach ( var alias in personAliasService.Queryable().Where( a => a.PersonId == person.Id ) )
                         {
+                            foreach ( var duplicate in personDuplicateService.Queryable().Where( d => d.DuplicatePersonAliasId == alias.Id ) )
+                            {
+                                personDuplicateService.Delete( duplicate );
+                            }
+
                             personAliasService.Delete( alias );
                         }
 
@@ -1240,7 +1247,7 @@ namespace RockWeb.Blocks.Examples
             }
 
             // get some variables we'll need to create the attendance records
-            DateTime startingDate = DateTime.Parse( elemFamily.Attribute( "startingAttendance" ).Value.Trim() );
+            DateTime startingDate = DateTime.Parse( elemFamily.Attribute( "startingAttendance" ).Value.Trim(), new CultureInfo( "en-US" ) );
             DateTime endDate = RockDateTime.Now;
 
             // If the XML specifies an endingAttendance date use it, otherwise use endingAttendanceWeeksAgo
@@ -1447,7 +1454,7 @@ namespace RockWeb.Blocks.Examples
 
                     if ( personElem.Attribute( "birthDate" ) != null )
                     {
-                        person.BirthDate = DateTime.Parse( personElem.Attribute( "birthDate" ).Value.Trim() );
+                        person.BirthDate = DateTime.Parse( personElem.Attribute( "birthDate" ).Value.Trim(), new CultureInfo( "en-US" ) );
                     }
 
                     if ( personElem.Attribute( "grade" ) != null )
@@ -1456,7 +1463,7 @@ namespace RockWeb.Blocks.Examples
                     }
                     else if ( personElem.Attribute( "graduationDate" ) != null )
                     {
-                        person.GraduationDate = DateTime.Parse( personElem.Attribute( "graduationDate" ).Value.Trim() );
+                        person.GraduationDate = DateTime.Parse( personElem.Attribute( "graduationDate" ).Value.Trim(), new CultureInfo( "en-US" ) );
                     }
 
                     // Now, if their age was given we'll change the given birth year to make them
@@ -1664,7 +1671,7 @@ namespace RockWeb.Blocks.Examples
                 Caption = string.Empty,
                 CreatedByPersonAliasId = createdByPersonAliasId,
                 Text = noteText,
-                CreatedDateTime = DateTime.Parse( noteDate ?? RockDateTime.Now.ToString() )
+                CreatedDateTime = string.IsNullOrWhiteSpace( noteDate ) ? RockDateTime.Now : DateTime.Parse( noteDate, new CultureInfo( "en-US" ) )
             };
 
             noteService.Add( note );

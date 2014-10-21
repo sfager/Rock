@@ -49,6 +49,7 @@ namespace RockWeb.Blocks.Core
         private string _rockPackageId = "Rock";
         IEnumerable<IPackage> _availablePackages = null;
         SemanticVersion _installedVersion = new SemanticVersion( "0.0.0" );
+        private int _numberOfAvailablePackages = 0;
 
         #endregion
 
@@ -75,6 +76,25 @@ namespace RockWeb.Blocks.Core
         #endregion
 
         #region Base Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            string script = @"
+    $('#btn-restart').click(function () {
+        var btn = $(this);
+        btn.button('loading');
+        location = location.href;
+    });
+";
+            ScriptManager.RegisterStartupScript( pnlUpdateSuccess, pnlUpdateSuccess.GetType(), "restart-script", script, true );
+        }
+
         /// <summary>
         /// Invoked on page load.
         /// </summary>
@@ -131,16 +151,16 @@ namespace RockWeb.Blocks.Core
             WriteAppOffline();
             try
             {
+                pnlUpdatesAvailable.Visible = false;
+
                 if ( ! UpdateRockPackage( version ) )
                 {
                     pnlError.Visible = true;
                     pnlUpdateSuccess.Visible = false;
+                    SendStatictics( version );
                 }
 
-                pnlUpdatesAvailable.Visible = false;
                 lRockVersion.Text = "";
-
-                SendStatictics( version );
             }
             catch ( Exception ex )
             {
@@ -152,6 +172,11 @@ namespace RockWeb.Blocks.Core
             RemoveAppOffline();
         }
 
+        /// <summary>
+        /// Enables and sets the appropriate CSS class on the install buttons and each div panel.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rptPackageVersions_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
@@ -162,23 +187,29 @@ namespace RockWeb.Blocks.Core
                     Boolean isExactPackageInstalled = NuGetService.IsPackageInstalled( package );
                     LinkButton lbInstall = e.Item.FindControl( "lbInstall" ) as LinkButton;
                     var divPanel = e.Item.FindControl( "divPanel" ) as HtmlGenericControl;
-                    // Only the first item in the list is the primary
-                    if ( e.Item.ItemIndex == 0 )
+                    // Only the last item in the list is the primary
+                    if ( e.Item.ItemIndex == _numberOfAvailablePackages - 1 )
                     {
                         lbInstall.Enabled = true;
-                        lbInstall.AddCssClass( "btn-primary" );
-                        divPanel.AddCssClass( "panel-primary" );
+                        lbInstall.AddCssClass( "btn-info" );
+                        divPanel.AddCssClass( "panel-info" );
                     }
                     else
                     {
-                        lbInstall.Enabled = true;
+                        lbInstall.Enabled = false;
+                        lbInstall.Text = "Pending";
                         lbInstall.AddCssClass( "btn-default" );
-                        divPanel.AddCssClass( "panel-default" );
+                        divPanel.AddCssClass( "panel-block" );
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Handles the click event for the particular version button that was clicked.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rptPackageVersions_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             string version = e.CommandArgument.ToString();
@@ -207,7 +238,7 @@ namespace RockWeb.Blocks.Core
                 }
                 else
                 {
-                    errors = NuGetService.UpdatePackage( update );
+                    errors = NuGetService.UpdatePackageAndBackup( update, installed );
                 }
 
                 CheckForManualFileMoves( version );
@@ -223,13 +254,27 @@ namespace RockWeb.Blocks.Core
                 {
                     RestControllerService.RegisterControllers();
                 }
-                catch (Exception ex)
+                catch ( Exception ex )
                 {
-                    errors = errors.Concat( new[] { string.Format( "The update was installed but there was a problem registering any new REST controllers. ({0})", ex.Message ) } );
                     LogException( ex );
                 }
             }
-            catch ( InvalidOperationException ex )
+            catch ( OutOfMemoryException ex )
+            {
+                errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}. It looks like your website ran out of memory. Check out <a href='http://www.rockrms.com/Rock/UpdateIssues#outofmemory'>this page for some assistance</a>", version ) } );
+                LogException( ex );
+            }
+            catch( System.Xml.XmlException ex )
+            {
+                errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}. It looks one of the standard XML files ({1}) may have been customized which prevented us from updating it. Check out <a href='http://www.rockrms.com/Rock/UpdateIssues#customizedxml'>this page for some assistance</a>", version, ex.Message ) } );
+                LogException( ex );
+            }
+            catch ( System.IO.IOException ex )
+            {
+                errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}. We were not able to replace an important file ({1}) after the update. Check out <a href='http://www.rockrms.com/Rock/UpdateIssues#unabletoreplacefile'>this page for some assistance</a>", version, ex.Message ) } );
+                LogException( ex );
+            }
+            catch ( Exception ex )
             {
                 errors = errors.Concat( new[] { string.Format( "There is a problem installing v{0}: {1}", version, ex.Message ) } );
                 LogException( ex );
@@ -287,20 +332,26 @@ namespace RockWeb.Blocks.Core
 
                     verifiedPackages.Add( package );
 
-                    if ( package.Tags != null && package.Tags.Contains( "requires-" ) )
-                    {
-                        var requiredVersion = ExtractRequiredVersionFromTags( package );
-                        // if that required version is greater than our currently installed version
-                        // then we can't have any of the prior packages in the verifiedPackages list
-                        // so we clear it out and keep processing.
-                        if ( requiredVersion > _installedVersion )
-                        {
-                            nbMoreUpdatesAvailable.Visible = true;
-                            verifiedPackages.Clear();
-                        }
-                    }
+                    //if ( package.Tags != null && package.Tags.Contains( "requires-" ) )
+                    //{
+                    //    var requiredVersion = ExtractRequiredVersionFromTags( package );
+                    //    // if that required version is greater than our currently installed version
+                    //    // then we can't have any of the prior packages in the verifiedPackages list
+                    //    // so we clear it out and keep processing.
+                    //    if ( requiredVersion > _installedVersion )
+                    //    {
+                            
+                    //        verifiedPackages.Clear();
+                    //    }
+                    //}
                 }
+
                 _availablePackages = verifiedPackages;
+                _numberOfAvailablePackages = verifiedPackages.Count;
+                if ( _numberOfAvailablePackages > 1 )
+                {
+                    nbMoreUpdatesAvailable.Visible = true;
+                }
             }
             catch ( InvalidOperationException ex )
             {
@@ -655,7 +706,7 @@ namespace RockWeb.Blocks.Core
             }
         }
         #endregion
-    }
+}
 
     [Serializable]
     public class EnvData

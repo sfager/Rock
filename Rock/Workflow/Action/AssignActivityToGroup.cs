@@ -32,7 +32,7 @@ namespace Rock.Workflow.Action
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Assign Activity to Group" )]
 
-    [GroupField( "Group", "The group to assign this activity to.")]
+    [GroupTypeGroupField( "Group", "Select group type, then group, to set the group to assign this activity to.", "Group")] 
     public class AssignActivityToGroup : ActionComponent
     {
         /// <summary>
@@ -47,10 +47,10 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            int? groupId = GetAttributeValue( action, "Group" ).AsIntegerOrNull();
-            if ( groupId.HasValue )
+            var groupGuid = GetAttributeValue( action, "Group" ).AsGuidOrNull();
+            if ( groupGuid.HasValue )
             {
-                var group = new GroupService( rockContext ).Get( groupId.Value );
+                var group = new GroupService( rockContext ).Get( groupGuid.Value );
                 if ( group != null )
                 {
                     action.Activity.AssignedPersonAlias = null;

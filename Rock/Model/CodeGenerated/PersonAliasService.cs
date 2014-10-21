@@ -122,6 +122,20 @@ namespace Rock.Model
             
             // ignoring CommunicationTemplate,SenderPersonAliasId 
             
+            // ignoring ContentChannel,CreatedByPersonAliasId 
+            
+            // ignoring ContentChannel,ModifiedByPersonAliasId 
+            
+            // ignoring ContentChannelItem,ApprovedByPersonAliasId 
+            
+            // ignoring ContentChannelItem,CreatedByPersonAliasId 
+            
+            // ignoring ContentChannelItem,ModifiedByPersonAliasId 
+            
+            // ignoring ContentChannelType,CreatedByPersonAliasId 
+            
+            // ignoring ContentChannelType,ModifiedByPersonAliasId 
+            
             // ignoring DataView,CreatedByPersonAliasId 
             
             // ignoring DataView,ModifiedByPersonAliasId 
@@ -251,28 +265,6 @@ namespace Rock.Model
             // ignoring Location,CreatedByPersonAliasId 
             
             // ignoring Location,ModifiedByPersonAliasId 
-            
-            // ignoring MarketingCampaign,ContactPersonAliasId 
-            
-            // ignoring MarketingCampaign,CreatedByPersonAliasId 
-            
-            // ignoring MarketingCampaign,ModifiedByPersonAliasId 
-            
-            // ignoring MarketingCampaignAd,CreatedByPersonAliasId 
-            
-            // ignoring MarketingCampaignAd,ModifiedByPersonAliasId 
-            
-            // ignoring MarketingCampaignAdType,CreatedByPersonAliasId 
-            
-            // ignoring MarketingCampaignAdType,ModifiedByPersonAliasId 
-            
-            // ignoring MarketingCampaignAudience,CreatedByPersonAliasId 
-            
-            // ignoring MarketingCampaignAudience,ModifiedByPersonAliasId 
-            
-            // ignoring MarketingCampaignCampus,CreatedByPersonAliasId 
-            
-            // ignoring MarketingCampaignCampus,ModifiedByPersonAliasId 
             
             // ignoring Metric,AdminPersonAliasId 
             

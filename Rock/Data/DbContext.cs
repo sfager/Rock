@@ -179,6 +179,20 @@ namespace Rock.Data
                 personAliasId = personAlias.Id;
             }
 
+            // First loop through all models calling the PreSaveChanges
+            foreach ( var entry in dbContext.ChangeTracker.Entries()
+                .Where( c =>
+                    c.Entity is IEntity &&
+                    ( c.State == EntityState.Added || c.State == EntityState.Modified || c.State == EntityState.Deleted ) ) )
+            {
+                if ( entry.Entity is IModel )
+                {
+                    var model = entry.Entity as IModel;
+                    model.PreSaveChanges( this, entry.State );
+                }
+            }
+
+            // Then loop again, as new models may have been added by PreSaveChanges events
             var updatedItems = new List<ContextItem>();
             foreach ( var entry in dbContext.ChangeTracker.Entries()
                 .Where( c =>
@@ -266,7 +280,7 @@ namespace Rock.Data
             try
             {
                 var audits = updatedItems.Select( i => i.Audit ).ToList();
-                if ( audits.Any() )
+                if ( audits.Any( a => a.Details.Any() ) )
                 {
                     var transaction = new Rock.Transactions.AuditTransaction();
                     transaction.Audits = audits;

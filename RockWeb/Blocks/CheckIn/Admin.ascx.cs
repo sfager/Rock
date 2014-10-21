@@ -45,6 +45,8 @@ namespace RockWeb.Blocks.CheckIn
         protected override void OnLoad( EventArgs e )
         {
             RockPage.AddScriptLink( "~/Blocks/CheckIn/Scripts/geo-min.js" );
+            RockPage.AddScriptLink( "~/Scripts/iscroll.js" );
+            RockPage.AddScriptLink( "~/Scripts/CheckinClient/checkin-core.js" );
 
             if ( !Page.IsPostBack )
             {
@@ -373,7 +375,9 @@ namespace RockWeb.Blocks.CheckIn
             foreach ( var groupType in locationService.Queryable()
                 .Where( l => locationIds.Contains( l.Id ) )
                 .SelectMany( l => l.GroupLocations )
+                .Where( gl => gl.Group.GroupType.TakesAttendance )
                 .Select( gl => gl.Group.GroupType )
+                .Distinct()
                 .ToList() )
             {
                 if ( !groupTypes.ContainsKey( groupType.Id ) )

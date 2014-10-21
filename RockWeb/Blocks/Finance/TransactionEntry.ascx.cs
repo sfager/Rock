@@ -64,27 +64,30 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Prompt for Phone", "Should the user be prompted for their phone number?", false, "", 11, "DisplayPhone" )]
     [BooleanField( "Prompt for Email", "Should the user be prompted for their email address?", true, "", 12, "DisplayEmail" )]
 
-    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
+    [CodeEditorField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.  <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <p>
-Please confirm the information below. Once you have confirmed that the information is accurate click the 'Finish' button to complete your transaction.
+    Please confirm the information below. Once you have confirmed that the information is 
+    accurate click the 'Finish' button to complete your transaction.
 </p>
 ", "Text Options", 13 )]
 
-    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
+    [CodeEditorField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section. <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <div class='alert alert-info'>
-By clicking the 'finish' button below I agree to allow {{ OrganizationName }} to transfer the amount above from my account. I acknowledge that I may
-update the transaction information at any time by returning to this website. Please call the Finance Office if you have any additional questions.
+    By clicking the 'finish' button below I agree to allow {{ OrganizationName }} 
+    to transfer the amount above from my account. I acknowledge that I may
+    update the transaction information at any time by returning to this website. Please 
+    call the Finance Office if you have any additional questions.
 </div>
 ", "Text Options", 14 )]
 
-    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
+    [CodeEditorField( "Success Header", "The text (HTML) to display at the top of the success section. <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 <p>
-Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively
-achieve our mission.  We are so grateful for your commitment.
+    Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively
+    achieve our mission.  We are so grateful for your commitment.
 </p>
 ", "Text Options", 15 )]
 
-    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section.", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
+    [CodeEditorField( "Success Footer", "The text (HTML) to display at the bottom of the success section. <span class='tip tip-liquid'></span> <span class='tip tip-html'></span>", CodeEditorMode.Html, CodeEditorTheme.Rock, 400, true, @"
 ", "Text Options", 16 )]
 
     [EmailTemplateField( "Confirm Account", "Confirm Account Email Template", false, Rock.SystemGuid.SystemEmail.SECURITY_CONFIRM_ACCOUNT, "Email Templates", 17, "ConfirmAccountTemplate" )]
@@ -321,17 +324,18 @@ achieve our mission.  We are so grateful for your commitment.
                 // Display Options
                 btnAddAccount.Title = GetAttributeValue( "AddAccountText" );
 
-                bool display = false;
+                bool displayEmail = GetAttributeValue( "DisplayEmail" ).AsBoolean();
 
-                bool.TryParse( GetAttributeValue( "DisplayEmail" ), out display );
-                txtEmail.Visible = display;
-                txtEmail.Required = display;
-                tdEmail.Visible = display;
+                txtEmail.Visible = displayEmail;
+                txtEmail.Required = displayEmail;
+                tdEmailConfirm.Visible = displayEmail;
+                tdEmailReceipt.Visible = displayEmail;
 
-                bool.TryParse( GetAttributeValue( "DisplayPhone" ), out display );
-                pnbPhone.Visible = display;
-                pnbPhone.Required = display;
-                tdPhone.Visible = display;
+                bool displayPhone = GetAttributeValue( "DisplayPhone" ).AsBoolean();
+                pnbPhone.Visible = displayPhone;
+                pnbPhone.Required = displayPhone;
+                tdPhoneConfirm.Visible = displayPhone;
+                tdPhoneReceipt.Visible = displayPhone;
 
                 FluidLayout = GetAttributeValue( "LayoutStyle" ) == "Fluid";
 
@@ -368,7 +372,7 @@ achieve our mission.  We are so grateful for your commitment.
                 Rock.Web.Cache.GlobalAttributesCache.Read().AttributeValues
                     .Where( v => v.Key.StartsWith( "Organization", StringComparison.CurrentCultureIgnoreCase ) )
                     .ToList()
-                    .ForEach( v => configValues.Add( v.Key, v.Value.Value ) );
+                    .ForEach( v => configValues.Add( v.Key, v.Value ) );
                 phConfirmationHeader.Controls.Add( new LiteralControl( GetAttributeValue( "ConfirmationHeader" ).ResolveMergeFields( configValues ) ) );
                 phConfirmationFooter.Controls.Add( new LiteralControl( GetAttributeValue( "ConfirmationFooter" ).ResolveMergeFields( configValues ) ) );
                 phSuccessHeader.Controls.Add( new LiteralControl( GetAttributeValue( "SuccessHeader" ).ResolveMergeFields( configValues ) ) );
@@ -1170,19 +1174,19 @@ achieve our mission.  We are so grateful for your commitment.
                 paymentInfo.LastName = txtLastName.Text;
             }
 
-            tdName.Description = paymentInfo.FullName;
-            tdPhone.Description = paymentInfo.Phone;
-            tdEmail.Description = paymentInfo.Email;
-            tdAddress.Description = string.Format( "{0} {1}, {2} {3}", paymentInfo.Street1, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode );
+            tdNameConfirm.Description = paymentInfo.FullName;
+            tdPhoneConfirm.Description = paymentInfo.Phone;
+            tdEmailConfirm.Description = paymentInfo.Email;
+            tdAddressConfirm.Description = string.Format( "{0} {1}, {2} {3}", paymentInfo.Street1, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode );
 
             rptAccountListConfirmation.DataSource = SelectedAccounts.Where( a => a.Amount != 0 );
             rptAccountListConfirmation.DataBind();
 
-            tdTotal.Description = paymentInfo.Amount.ToString( "C" );
+            tdTotalConfirm.Description = paymentInfo.Amount.ToString( "C" );
 
-            tdPaymentMethod.Description = paymentInfo.CurrencyTypeValue.Description;
-            tdAccountNumber.Description = paymentInfo.MaskedNumber;
-            tdWhen.Description = schedule != null ? schedule.ToString() : "Today";
+            tdPaymentMethodConfirm.Description = paymentInfo.CurrencyTypeValue.Description;
+            tdAccountNumberConfirm.Description = paymentInfo.MaskedNumber;
+            tdWhenConfirm.Description = schedule != null ? schedule.ToString() : "Today";
 
             return true;
         }
@@ -1496,11 +1500,26 @@ achieve our mission.  We are so grateful for your commitment.
                     }
                 }
 
-                tdTransactionCode.Description = TransactionCode;
-                tdTransactionCode.Visible = !string.IsNullOrWhiteSpace( TransactionCode );
+                tdTransactionCodeReceipt.Description = TransactionCode;
+                tdTransactionCodeReceipt.Visible = !string.IsNullOrWhiteSpace( TransactionCode );
 
                 tdScheduleId.Description = ScheduleId;
                 tdScheduleId.Visible = !string.IsNullOrWhiteSpace( ScheduleId );
+
+                tdNameReceipt.Description = paymentInfo.FullName;
+                tdPhoneReceipt.Description = paymentInfo.Phone;
+                tdEmailReceipt.Description = paymentInfo.Email;
+                tdAddressReceipt.Description = string.Format( "{0} {1}, {2} {3}", paymentInfo.Street1, paymentInfo.City, paymentInfo.State, paymentInfo.PostalCode );
+
+                rptAccountListReceipt.DataSource = SelectedAccounts.Where( a => a.Amount != 0 );
+                rptAccountListReceipt.DataBind();
+
+                tdTotalReceipt.Description = paymentInfo.Amount.ToString( "C" );
+
+                tdPaymentMethodReceipt.Description = paymentInfo.CurrencyTypeValue.Description;
+                tdAccountNumberReceipt.Description = paymentInfo.MaskedNumber;
+                tdWhenReceipt.Description = schedule != null ? schedule.ToString() : "Today";
+
 
                 // If there was a transaction code returned and this was not already created from a previous saved account,
                 // show the option to save the account.
@@ -1523,6 +1542,7 @@ achieve our mission.  We are so grateful for your commitment.
             else
             {
                 pnlDupWarning.Visible = true;
+                divActions.Visible = false;
                 errorMessage = string.Empty;
                 return false;
             }
@@ -1626,7 +1646,7 @@ achieve our mission.  We are so grateful for your commitment.
                     var mm = curr.getMonth()+1;
                     var yy = curr.getFullYear();
                     $dateInput.val(mm+'/'+dd+'/'+yy);
-                    $dateInput.data('datePicker').value(mm+'/'+dd+'/'+yy);
+                    $dateInput.data('datepicker').update();
                 }}
             }};
         }});

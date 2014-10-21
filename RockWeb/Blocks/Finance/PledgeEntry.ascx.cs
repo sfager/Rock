@@ -32,7 +32,7 @@ namespace RockWeb.Blocks.Finance
 {
     [DisplayName( "Pledge Entry" )]
     [Category( "Finance" )]
-    [Description( "Allows a website visitor to create pledge for the configured account funds, start and end date. This block also creates a new person record if a matching person could not be found." )]
+    [Description( "Allows a website visitor to create pledge for the configured accounts, start and end date. This block also creates a new person record if a matching person could not be found." )]
 
     [BooleanField( "Enable Smart Names", "Check the first name for 'and' and '&' and split it to just use the first name provided.", true, Order = 1 )]
     [AccountField( "Account", "The account that new pledges will be allocated toward", true, Rock.SystemGuid.FinancialAccount.GENERAL_FUND, "", Order = 2 )]
@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.Finance
     [TextField( "Save Button Text", "The Text to shown on the Save button", true, "Save", Order = 7 )]
     [TextField( "Note Message", "Message to show at the bottom of the create pledge block.", false, "Note: This commitment is a statement of intent and may be changed as your circumstances change.", Order = 8 )]
 
-    [CodeEditorField( "Receipt Text", "The text (or html) to display as the pledge receipt", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, Order = 9, DefaultValue =
+    [CodeEditorField( "Receipt Text", "The text (or html) to display as the pledge receipt. <span class='tip tip-liquid'></span> <span class='tip tip-html'>", CodeEditorMode.Liquid, CodeEditorTheme.Rock, 200, Order = 9, DefaultValue =
         @"
 <h1>Thank You!</h1>
 <p>
@@ -61,6 +61,19 @@ namespace RockWeb.Blocks.Finance
     public partial class PledgeEntry : RockBlock
     {
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
+            this.BlockUpdated += Block_BlockUpdated;
+            this.AddConfigurationUpdateTrigger( upnlContent );
+        }
+        
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -72,6 +85,16 @@ namespace RockWeb.Blocks.Finance
             {
                 ShowForm();
             }
+        }
+
+        /// <summary>
+        /// Handles the BlockUpdated event of the Block control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void Block_BlockUpdated( object sender, EventArgs e )
+        {
+            ShowForm();
         }
 
         /// <summary>

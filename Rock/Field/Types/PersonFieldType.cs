@@ -27,7 +27,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and display a person
+    /// Field used to save and display a person. Stored as PersonAlias.Guid
     /// </summary>
     [Serializable]
     public class PersonFieldType : FieldType, IEntityFieldType, ILinkableFieldType
@@ -79,7 +79,7 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Creates the control(s) neccessary for prompting user for a new value
+        /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>

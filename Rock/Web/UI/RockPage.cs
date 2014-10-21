@@ -440,8 +440,8 @@ namespace Rock.Web.UI
         /// </summary>
         protected override void InitializeCulture()
         {
-            base.UICulture = "auto";
-            base.Culture = "auto";
+            base.UICulture = "Auto";
+            base.Culture = "Auto";
 
             base.InitializeCulture();
         }
@@ -554,7 +554,7 @@ namespace Rock.Web.UI
             if ( !String.IsNullOrEmpty( impersonatedPersonKey ) )
             {
                 Rock.Model.PersonService personService = new Model.PersonService( rockContext );
-                Rock.Model.Person impersonatedPerson = personService.GetByEncryptedKey( impersonatedPersonKey );
+                Rock.Model.Person impersonatedPerson = personService.GetByUrlEncodedKey( impersonatedPersonKey );
                 if ( impersonatedPerson != null )
                 {
                     Rock.Security.Authorization.SetAuthCookie( "rckipid=" + impersonatedPerson.EncryptedKey, false, true );
@@ -643,7 +643,7 @@ namespace Rock.Web.UI
                         // If not authorized, and the user has logged in, redirect to error page
                         Page.Trace.Warn( "Redirecting to error page" );
 
-                        Response.Redirect( "~/error.aspx?type=security", false );
+                        Response.Redirect( "~/Error.aspx?type=security", false );
                         Context.ApplicationInstance.CompleteRequest();
                     }
                 }

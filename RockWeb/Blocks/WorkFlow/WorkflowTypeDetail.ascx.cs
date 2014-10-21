@@ -686,6 +686,9 @@ namespace RockWeb.Blocks.WorkFlow
                                 formAttribute.IsVisible = editorAttribute.IsVisible;
                                 formAttribute.IsReadOnly = editorAttribute.IsReadOnly;
                                 formAttribute.IsRequired = editorAttribute.IsRequired;
+                                formAttribute.HideLabel = editorAttribute.HideLabel;
+                                formAttribute.PreHtml = editorAttribute.PreHtml;
+                                formAttribute.PostHtml = editorAttribute.PostHtml;
                             }
                         }
                     }
@@ -1430,7 +1433,7 @@ namespace RockWeb.Blocks.WorkFlow
             System.Web.HttpContext.Current.Items["ActivityTypeAttributes"] = activityAttributes;
 
             var control = new WorkflowActivityTypeEditor();
-            control.ID = "WorkflowActivityTypeEditor_" + activityType.Guid.ToString( "N" );
+            control.ID = activityType.Guid.ToString( "N" );
             parentControl.Controls.Add( control );
             control.ValidationGroup = btnSave.ValidationGroup;
 
@@ -1491,7 +1494,7 @@ namespace RockWeb.Blocks.WorkFlow
         {
             var control = new WorkflowActionTypeEditor();
             parentControl.Controls.Add( control );
-            control.ID = "WorkflowActionTypeEditor_" + actionType.Guid.ToString( "N" );
+            control.ID = actionType.Guid.ToString( "N" );
             control.ValidationGroup = btnSave.ValidationGroup;
 
             control.DeleteActionTypeClick += workflowActionTypeEditor_DeleteActionTypeClick;
@@ -1524,6 +1527,9 @@ namespace RockWeb.Blocks.WorkFlow
                         formAttribute.IsVisible = false;
                         formAttribute.IsReadOnly = true;
                         formAttribute.IsRequired = false;
+                        formAttribute.HideLabel = false;
+                        formAttribute.PreHtml = string.Empty;
+                        formAttribute.PostHtml = string.Empty;
                         formAttributes.Add( formAttribute );
                     }
                 }

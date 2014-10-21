@@ -306,8 +306,8 @@ namespace Rock.Model
         [MaxLength( 75 )]
         [DataMember]
         [Previewable]
-        [RegularExpression(@"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage= "The Email address is invalid")]
-        [Index("IX_Email")]
+        [RegularExpression( @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage = "The Email address is invalid" )]
+        [Index( "IX_Email" )]
         public string Email { get; set; }
 
         /// <summary>
@@ -384,7 +384,8 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="Person"/> class.
         /// </summary>
-        public Person() : base()
+        public Person()
+            : base()
         {
             _users = new Collection<UserLogin>();
             _phoneNumbers = new Collection<PhoneNumber>();
@@ -458,6 +459,21 @@ namespace Rock.Model
             private set { }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is business.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is business; otherwise, <c>false</c>.
+        /// </value>
+        [NotMapped]
+        private bool IsBusiness
+        {
+            get
+            {
+                int recordTypeValueIdBusiness = DefinedValueCache.Read( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                return this.RecordTypeValueId.HasValue && this.RecordTypeValueId == recordTypeValueIdBusiness;
+            }
+        }
 
         /// <summary>
         /// Gets the full name of the Person using the LastName, FirstName format.
@@ -470,7 +486,13 @@ namespace Rock.Model
         {
             get
             {
+                if ( this.IsBusiness )
+                {
+                    return LastName;
+                }
+
                 var fullName = new StringBuilder();
+
                 fullName.Append( LastName );
 
                 if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Value ) )
@@ -493,6 +515,11 @@ namespace Rock.Model
         {
             get
             {
+                if ( this.IsBusiness )
+                {
+                    return LastName;
+                }
+
                 var fullName = new StringBuilder();
 
                 fullName.AppendFormat( "{0} {1}", FirstName, LastName );
@@ -516,6 +543,11 @@ namespace Rock.Model
         {
             get
             {
+                if ( this.IsBusiness )
+                {
+                    return LastName;
+                }
+
                 var fullName = new StringBuilder();
                 fullName.Append( LastName );
 
@@ -595,7 +627,7 @@ namespace Rock.Model
         [NotMapped]
         public virtual string PhotoUrl
         {
-            get 
+            get
             {
                 if ( this.RecordTypeValue != null )
                 {
@@ -960,7 +992,7 @@ namespace Rock.Model
         [DataMember]
         public virtual string GradeFormatted
         {
-            get 
+            get
             {
                 int? grade = Grade;
                 if ( grade.HasValue )
@@ -971,15 +1003,15 @@ namespace Rock.Model
                         case 1: { return "1st Grade"; }
                         case 2: { return "2nd Grade"; }
                         case 3: { return "3rd Grade"; }
-                        case 4: 
-                        case 5: 
-                        case 6: 
-                        case 7: 
-                        case 8: 
-                        case 9: 
+                        case 4:
+                        case 5:
+                        case 6:
+                        case 7:
+                        case 8:
+                        case 9:
                         case 10:
                         case 11:
-                        case 12: { return string.Format("{0}th Grade", grade.Value); }
+                        case 12: { return string.Format( "{0}th Grade", grade.Value ); }
                         default: { return string.Empty; }
                     }
                 }
@@ -1114,7 +1146,7 @@ namespace Rock.Model
                 IsDeceased = isInactive && isReasonDeceased;
             }
 
-            if (string.IsNullOrWhiteSpace(NickName))
+            if ( string.IsNullOrWhiteSpace( NickName ) )
             {
                 NickName = FirstName;
             }
@@ -1235,6 +1267,8 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPhotoUrl( int? photoId, int? age, Gender gender, Guid? RecordTypeValueGuid, int? maxWidth = null, int? maxHeight = null )
         {
+
+            string virtualPath = String.Empty;
             if ( photoId.HasValue )
             {
                 string widthHeightParams = string.Empty;
@@ -1242,30 +1276,30 @@ namespace Rock.Model
                 {
                     widthHeightParams += string.Format( "&maxwidth={0}", maxWidth.Value );
                 }
-                
+
                 if ( maxHeight.HasValue )
                 {
                     widthHeightParams += string.Format( "&maxheight={0}", maxHeight.Value );
                 }
-                
-                return VirtualPathUtility.ToAbsolute( String.Format( "~/GetImage.ashx?id={0}" + widthHeightParams, photoId ) );
+
+                virtualPath = String.Format( "~/GetImage.ashx?id={0}" + widthHeightParams, photoId );
             }
             else
             {
                 if ( RecordTypeValueGuid.HasValue && RecordTypeValueGuid.Value == SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
                 {
-                    return VirtualPathUtility.ToAbsolute( "~/Assets/Images/business-no-photo.svg?" );
+                    virtualPath = "~/Assets/Images/business-no-photo.svg?";
                 }
                 else if ( age.HasValue && age.Value < 18 )
                 {
                     // it's a child
                     if ( gender == Model.Gender.Female )
                     {
-                        return VirtualPathUtility.ToAbsolute( "~/Assets/Images/person-no-photo-child-female.svg?" );
+                        virtualPath = "~/Assets/Images/person-no-photo-child-female.svg?";
                     }
                     else
                     {
-                        return VirtualPathUtility.ToAbsolute( "~/Assets/Images/person-no-photo-child-male.svg?" );
+                        virtualPath = "~/Assets/Images/person-no-photo-child-male.svg?";
                     }
                 }
                 else
@@ -1273,13 +1307,22 @@ namespace Rock.Model
                     // it's an adult
                     if ( gender == Model.Gender.Female )
                     {
-                        return VirtualPathUtility.ToAbsolute( "~/Assets/Images/person-no-photo-female.svg?" );
+                        virtualPath = "~/Assets/Images/person-no-photo-female.svg?";
                     }
                     else
                     {
-                        return VirtualPathUtility.ToAbsolute( "~/Assets/Images/person-no-photo-male.svg?" );
+                        virtualPath = "~/Assets/Images/person-no-photo-male.svg?";
                     }
-                } 
+                }
+            }
+
+            if ( System.Web.HttpContext.Current == null )
+            {
+                return virtualPath;
+            }
+            else
+            {
+                return VirtualPathUtility.ToAbsolute( virtualPath );
             }
         }
 
@@ -1293,7 +1336,7 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPhotoImageTag( PersonAlias personAlias, int? maxWidth = null, int? maxHeight = null, string className = "" )
         {
-            Person person =  personAlias != null ? personAlias.Person : null;
+            Person person = personAlias != null ? personAlias.Person : null;
             return GetPhotoImageTag( person, maxWidth, maxHeight, className );
         }
 
@@ -1311,6 +1354,7 @@ namespace Rock.Model
             Gender gender = Gender.Male;
             string altText = string.Empty;
             int? age = null;
+            Guid? recordTypeValueGuid = null;
 
             if ( person != null )
             {
@@ -1318,11 +1362,12 @@ namespace Rock.Model
                 gender = person.Gender;
                 altText = person.FullName;
                 age = person.Age;
+                recordTypeValueGuid = person.RecordTypeValueId.HasValue ? DefinedValueCache.Read( person.RecordTypeValueId.Value ).Guid : (Guid?)null;
             }
 
-            return Person.GetPhotoImageTag( photoId, age, gender, maxWidth, maxHeight, altText, className );
+            return Person.GetPhotoImageTag( photoId, age, gender, recordTypeValueGuid, maxWidth, maxHeight, altText, className );
         }
-        
+
         /// <summary>
         /// Gets the photo image tag.
         /// </summary>
@@ -1335,7 +1380,23 @@ namespace Rock.Model
         /// <returns>An html img tag (string) of the requested photo.</returns>
         public static string GetPhotoImageTag( int? photoId, Gender gender, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
         {
-            return Person.GetPhotoImageTag( photoId, null, gender, maxWidth, maxHeight, altText, className );
+            return Person.GetPhotoImageTag( photoId, null, gender, null, maxWidth, maxHeight, altText, className );
+        }
+
+        /// <summary>
+        /// Gets the photo image tag.
+        /// </summary>
+        /// <param name="photoId">The photo identifier.</param>
+        /// <param name="age">The age.</param>
+        /// <param name="gender">The gender.</param>
+        /// <param name="maxWidth">The maximum width.</param>
+        /// <param name="maxHeight">The maximum height.</param>
+        /// <param name="altText">The alt text.</param>
+        /// <param name="className">Name of the class.</param>
+        /// <returns></returns>
+        public static string GetPhotoImageTag( int? photoId, int? age, Gender gender, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
+        {
+            return Person.GetPhotoImageTag( photoId, age, gender, null, maxWidth, maxHeight, altText, className );
         }
 
         /// <summary>
@@ -1344,6 +1405,7 @@ namespace Rock.Model
         /// <param name="photoId">The photo identifier.</param>
         /// <param name="age">The age.</param>
         /// <param name="gender">The gender to use if the photoId is null.</param>
+        /// <param name="recordTypeValueGuid">The record type value unique identifier.</param>
         /// <param name="maxWidth">The maximum width (in px).</param>
         /// <param name="maxHeight">The maximum height (in px).</param>
         /// <param name="altText">The alt text to use on the image.</param>
@@ -1351,17 +1413,17 @@ namespace Rock.Model
         /// <returns>
         /// An html img tag (string) of the requested photo.
         /// </returns>
-        public static string GetPhotoImageTag(int? photoId, int? age, Gender gender, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
+        public static string GetPhotoImageTag( int? photoId, int? age, Gender gender, Guid? recordTypeValueGuid, int? maxWidth = null, int? maxHeight = null, string altText = "", string className = "" )
         {
             var photoUrl = new StringBuilder();
-            
+
             photoUrl.Append( VirtualPathUtility.ToAbsolute( "~/" ) );
 
             string styleString = string.Empty;
 
             string altString = string.IsNullOrWhiteSpace( altText ) ? "" :
                 string.Format( " alt='{0}'", altText );
-            
+
             string classString = string.IsNullOrWhiteSpace( className ) ? "" :
                 string.Format( " class='{0}'", className );
 
@@ -1370,16 +1432,20 @@ namespace Rock.Model
                 photoUrl.AppendFormat( "GetImage.ashx?id={0}", photoId );
                 if ( maxWidth.HasValue )
                 {
-                    photoUrl.AppendFormat( "&maxwidth={0}", maxWidth.Value);
+                    photoUrl.AppendFormat( "&maxwidth={0}", maxWidth.Value );
                 }
                 if ( maxHeight.HasValue )
                 {
-                    photoUrl.AppendFormat( "&maxheight={0}", maxHeight.Value);
+                    photoUrl.AppendFormat( "&maxheight={0}", maxHeight.Value );
                 }
             }
             else
             {
-                if ( age.HasValue && age.Value < 18 )
+                if ( recordTypeValueGuid.HasValue && recordTypeValueGuid.Value == SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
+                {
+                    photoUrl.Append( "/Assets/Images/business-no-photo.svg?" );
+                }
+                else if ( age.HasValue && age.Value < 18 )
                 {
                     // it's a child
                     if ( gender == Model.Gender.Female )
@@ -1403,9 +1469,9 @@ namespace Rock.Model
                         photoUrl.Append( "Assets/Images/person-no-photo-male.svg?" );
                     }
                 }
-                
 
-                if (maxWidth.HasValue || maxHeight.HasValue)
+
+                if ( maxWidth.HasValue || maxHeight.HasValue )
                 {
                     styleString = string.Format( " style='{0}{1}'",
                         maxWidth.HasValue ? "max-width:" + maxWidth.Value.ToString() + "px; " : "",

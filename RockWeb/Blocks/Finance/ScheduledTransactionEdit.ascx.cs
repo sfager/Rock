@@ -250,7 +250,7 @@ achieve our mission.  We are so grateful for your commitment.
                     Rock.Web.Cache.GlobalAttributesCache.Read().AttributeValues
                         .Where( v => v.Key.StartsWith( "Organization", StringComparison.CurrentCultureIgnoreCase ) )
                         .ToList()
-                        .ForEach( v => configValues.Add( v.Key, v.Value.Value ) );
+                        .ForEach( v => configValues.Add( v.Key, v.Value ) );
                     lConfirmationHeader.Text = GetAttributeValue( "ConfirmationHeader" ).ResolveMergeFields( configValues );
                     lConfirmationFooter.Text = GetAttributeValue( "ConfirmationFooter" ).ResolveMergeFields( configValues );
                     lSuccessHeader.Text = GetAttributeValue( "SuccessHeader" ).ResolveMergeFields( configValues );
@@ -437,6 +437,30 @@ achieve our mission.  We are so grateful for your commitment.
                     SetPage( 1 );
                     break;
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            var qryParams = new Dictionary<string, string>();
+
+            string personParam = PageParameter( "Person" );
+            if (!string.IsNullOrWhiteSpace(personParam))
+            {
+                qryParams.Add( "Person", personParam );
+            }
+
+            string txnParam = PageParameter( "ScheduledTransactionId" );
+            if ( !string.IsNullOrWhiteSpace( txnParam ) )
+            {
+                qryParams.Add( "ScheduledTransactionId", txnParam );
+            }
+
+            NavigateToParentPage( qryParams );
         }
 
         /// <summary>

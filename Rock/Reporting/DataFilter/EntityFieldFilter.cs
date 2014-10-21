@@ -18,13 +18,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -59,6 +59,7 @@ namespace Rock.Reporting.DataFilter
                     var datePicker = new DatePicker();
                     datePicker.ID = string.Format( "{0}_dtPicker", controlIdPrefix );
                     datePicker.AddCssClass( "js-filter-control" );
+                    datePicker.DisplayCurrentOption = true;
                     parentControl.Controls.Add( datePicker );
                     controls.Add( datePicker );
 
@@ -107,7 +108,20 @@ namespace Rock.Reporting.DataFilter
                     cblMultiSelect.RepeatDirection = RepeatDirection.Horizontal;
                     controls.Add( cblMultiSelect );
 
-                    if ( entityField.FieldKind == FieldKind.Property )
+                    if ( entityField.DefinedTypeGuid.HasValue )
+                    {
+                        // Defined Value Properties
+                        var definedType = DefinedTypeCache.Read( entityField.DefinedTypeGuid.Value );
+                        if ( definedType != null )
+                        {
+                            foreach ( var definedValue in definedType.DefinedValues )
+                            {
+                                cblMultiSelect.Items.Add( new ListItem( definedValue.Value, definedValue.Guid.ToString() ) );
+                            }
+                        }
+                    }
+
+                    else if ( entityField.FieldKind == FieldKind.Property )
                     {
                         if ( entityField.PropertyType.IsEnum )
                         {
@@ -117,32 +131,19 @@ namespace Rock.Reporting.DataFilter
                                 cblMultiSelect.Items.Add( new ListItem( Enum.GetName( entityField.PropertyType, value ).SplitCase() ) );
                             }
                         }
-                        else if ( entityField.DefinedTypeGuid.HasValue )
-                        {
-                            // Defined Value Properties
-                            var definedType = DefinedTypeCache.Read( entityField.DefinedTypeGuid.Value );
-                            if ( definedType != null )
-                            {
-                                foreach ( var definedValue in definedType.DefinedValues )
-                                {
-                                    cblMultiSelect.Items.Add( new ListItem( definedValue.Value, definedValue.Guid.ToString() ) );
-                                }
-                            }
-                        }
                     }
                     else
                     {
                         var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
                         if ( attribute != null )
                         {
-                            switch ( attribute.FieldType.Guid.ToString().ToUpper() )
+                            var itemValues = attribute.QualifierValues.ContainsKey( "values" ) ? attribute.QualifierValues["values"] : null;
+                            if ( itemValues != null )
                             {
-                                case SystemGuid.FieldType.SINGLE_SELECT:
-                                    //TODO get attribute values qualifier to populate cbl
-                                    break;
-                                case SystemGuid.FieldType.MULTI_SELECT:
-                                    //TODO get attribute values qualifier to populate cbl
-                                    break;
+                                foreach ( var listItem in itemValues.Value.GetListItems() )
+                                {
+                                    cblMultiSelect.Items.Add( listItem );
+                                }
                             }
                         }
                     }
@@ -169,12 +170,27 @@ namespace Rock.Reporting.DataFilter
                         var attribute = AttributeCache.Read( entityField.AttributeGuid.Value );
                         if ( attribute != null )
                         {
+                            var itemValues = attribute.QualifierValues.ContainsKey( "values" ) ? attribute.QualifierValues["values"] : null;
+                            if ( itemValues != null )
+                            {
+                                foreach ( var listItem in itemValues.Value.GetListItems() )
+                                {
+                                    ddlSingleSelect.Items.Add( listItem );
+                                }
+                            }
+                            
+                            
                             switch ( attribute.FieldType.Guid.ToString().ToUpper() )
                             {
                                 case SystemGuid.FieldType.BOOLEAN:
-                                    ddlSingleSelect.Items.Add( new ListItem( "True", "True" ) );
-                                    ddlSingleSelect.Items.Add( new ListItem( "False", "False" ) );
-                                    break;
+                                    {
+                                        string trueText = attribute.QualifierValues.ContainsKey( "truetext" ) ? attribute.QualifierValues["truetext"].Value : "True";
+                                        string falseText = attribute.QualifierValues.ContainsKey( "truetext" ) ? attribute.QualifierValues["truetext"].Value : "False";
+
+                                        ddlSingleSelect.Items.Add( new ListItem( trueText, "True" ) );
+                                        ddlSingleSelect.Items.Add( new ListItem( falseText, "False" ) );
+                                        break;
+                                    }
                             }
                         }
                     }
@@ -253,9 +269,24 @@ namespace Rock.Reporting.DataFilter
                                 }
                             }
                         }
-                        else
+                        else 
                         {
-                            selectedTexts = selectedValues.ToList();
+                            if ( entityField.FieldKind == FieldKind.Attribute )
+                            {
+                                var attribute = AttributeCache.Read( entityField.AttributeGuid ?? Guid.Empty );
+                                if ( attribute != null )
+                                {
+                                    var itemValues = attribute.QualifierValues.ContainsKey( "values" ) ? attribute.QualifierValues["values"] : null;
+                                    if ( itemValues != null )
+                                    {
+                                        selectedTexts = itemValues.Value.GetListItems().Where( a => selectedValues.ToList().Contains( a.Value ) ).Select( s => s.Text ).ToList();
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                selectedTexts = selectedValues.ToList();
+                            }
                         }
 
                         entityFieldResult = string.Format( "{0} is {1}", entityField.Title, selectedTexts.Select( v => "'" + v + "'" ).ToList().AsDelimited( " or " ) );
@@ -356,27 +387,32 @@ namespace Rock.Reporting.DataFilter
 
                 writer.RenderEndTag();  // row
 
+                string entityFieldTitleJS = System.Web.HttpUtility.JavaScriptStringEncode( entityField.Title );
+
                 string clientFormatSelection = string.Empty;
                 switch ( entityField.FilterFieldType )
                 {
                     case SystemGuid.FieldType.TIME:
+                        clientFormatSelection = string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' )", entityFieldTitleJS );
+                        break;
+
                     case SystemGuid.FieldType.DATE:
-                        clientFormatSelection = string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' )", entityField.Title );
+                        clientFormatSelection = string.Format( "var dateValue = $('input:checkbox', $selectedContent).is(':checked') ? ' Current Date' : ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' ); result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ' ' + dateValue", entityFieldTitleJS );
                         break;
 
                     case SystemGuid.FieldType.DECIMAL:
                     case SystemGuid.FieldType.INTEGER:
                     case SystemGuid.FieldType.TEXT:
-                        clientFormatSelection = string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' )", entityField.Title );
+                        clientFormatSelection = string.Format( "result = '{0} ' + $('select', $selectedContent).find(':selected').text() + ( $('input', $selectedContent).filter(':visible').length ?  (' \\'' +  $('input', $selectedContent).filter(':visible').val()  + '\\'') : '' )", entityFieldTitleJS );
                         break;
 
                     case SystemGuid.FieldType.MULTI_SELECT:
-                        clientFormatSelection = string.Format( "var selectedItems = ''; $('input:checked', $selectedContent).each(function() {{ selectedItems += selectedItems == '' ? '' : ' or '; selectedItems += '\\'' + $(this).parent().text() + '\\'' }}); result = '{0} is ' + selectedItems ", entityField.Title );
+                        clientFormatSelection = string.Format( "var selectedItems = ''; $('input:checked', $selectedContent).each(function() {{ selectedItems += selectedItems == '' ? '' : ' or '; selectedItems += '\\'' + $(this).parent().text() + '\\'' }}); result = '{0} is ' + selectedItems ", entityFieldTitleJS );
                         break;
 
                     case SystemGuid.FieldType.DAY_OF_WEEK:
                     case SystemGuid.FieldType.SINGLE_SELECT:
-                        clientFormatSelection = string.Format( "result = '{0} is ' + '\\'' + $('select', $selectedContent).find(':selected').text() + '\\''", entityField.Title );
+                        clientFormatSelection = string.Format( "result = '{0} is ' + '\\'' + $('select', $selectedContent).find(':selected').text() + '\\''", entityFieldTitleJS );
                         break;
                 }
 
@@ -440,13 +476,20 @@ namespace Rock.Reporting.DataFilter
                     if ( control is DatePicker )
                     {
                         var dtp = control as DatePicker;
-                        if ( dtp != null && dtp.SelectedDate.HasValue )
+                        if ( dtp != null )
                         {
-                            values.Add( dtp.SelectedDate.Value.ToShortDateString() );
-                        }
-                        else
-                        {
-                            values.Add( string.Empty );
+                            if ( dtp.CurrentDate )
+                            {
+                                values.Add( "CURRENT" );
+                            }
+                            else if ( dtp.SelectedDate.HasValue )
+                            {
+                                values.Add( dtp.SelectedDate.Value.ToShortDateString() );
+                            }
+                            else
+                            {
+                                values.Add( string.Empty );
+                            }
                         }
                     }
                     else if ( control is DateTimePicker )
@@ -508,7 +551,7 @@ namespace Rock.Reporting.DataFilter
         {
             if ( values.Count > 0 )
             {
-                string selectedProperty = values[0];
+                string selectedProperty = values[0].Replace(" ", "");   // Prior to v1.1 attribute.Name was used instead of attribute.Key, because of that, strip spaces to attempt matching key
 
                 if ( ddlProperty != null )
                 {
@@ -539,10 +582,18 @@ namespace Rock.Reporting.DataFilter
 
                             if ( control is DatePicker )
                             {
-                                var dateTime = selectedValue.AsDateTime();
-                                if ( dateTime.HasValue )
+                                var dtp = control as DatePicker;
+                                if ( selectedValue != null && selectedValue.Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) )
                                 {
-                                    ( control as DatePicker ).SelectedDate = dateTime.Value.Date;
+                                    dtp.CurrentDate = true;
+                                }
+                                else
+                                {
+                                    var dateTime = selectedValue.AsDateTime();
+                                    if ( dateTime.HasValue )
+                                    {
+                                        dtp.SelectedDate = dateTime.Value.Date;
+                                    }
                                 }
                             }
                             else if ( control is DateTimePicker )
@@ -597,7 +648,7 @@ namespace Rock.Reporting.DataFilter
         /// <returns></returns>
         public Expression GetAttributeExpression( IService serviceInstance, ParameterExpression parameterExpression, EntityField property, List<string> values )
         {
-            IEnumerable<int> ids = null;
+            IQueryable<int> ids = null;
 
             ComparisonType comparisonType = ComparisonType.EqualTo;
 
@@ -605,7 +656,16 @@ namespace Rock.Reporting.DataFilter
             var attributeValues = service.Queryable().Where( v =>
                 v.Attribute.Guid == property.AttributeGuid &&
                 v.EntityId.HasValue &&
-                v.Value != string.Empty ).ToList();
+                v.Value != string.Empty )
+                .Select( a => new
+                {
+                    a.Id,
+                    a.EntityId,
+                    a.Value,
+                    a.ValueAsDateTime,
+                    a.ValueAsNumeric
+                } );
+
 
             switch ( property.FilterFieldType )
             {
@@ -617,24 +677,29 @@ namespace Rock.Reporting.DataFilter
 
                         if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
                         {
-                            DateTime dateValue = values[1].AsDateTime() ?? DateTime.MinValue;
+                            DateTime dateValue = DateTime.Today;
+                            if ( values[1] == null || ( ! values[1].Equals( "CURRENT", StringComparison.OrdinalIgnoreCase ) ) )
+                            {
+                                dateValue = values[1].AsDateTime() ?? DateTime.MinValue;
+                            }
                             switch ( comparisonType )
                             {
                                 case ComparisonType.EqualTo:
                                 case ComparisonType.NotEqualTo:
-                                    ids = attributeValues.Where( v => dateValue.CompareTo( Convert.ToDateTime( v.Value ) ) == 0 ).Select( v => v.EntityId.Value );
+                                    // NOTE: EqualTo and NotEqualTo do the same thing because the "Not" part is taken care of later when the expression is built
+                                    ids = attributeValues.Where( v => v.ValueAsDateTime == dateValue ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.GreaterThan:
-                                    ids = attributeValues.Where( v => dateValue.CompareTo( Convert.ToDateTime( v.Value ) ) <= 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsDateTime > dateValue ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.GreaterThanOrEqualTo:
-                                    ids = attributeValues.Where( v => dateValue.CompareTo( Convert.ToDateTime( v.Value ) ) < 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsDateTime >= dateValue ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.LessThan:
-                                    ids = attributeValues.Where( v => dateValue.CompareTo( Convert.ToDateTime( v.Value ) ) >= 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsDateTime < dateValue ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.LessThanOrEqualTo:
-                                    ids = attributeValues.Where( v => dateValue.CompareTo( Convert.ToDateTime( v.Value ) ) > 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsDateTime <= dateValue ).Select( v => v.EntityId.Value );
                                     break;
                             }
                         }
@@ -654,24 +719,32 @@ namespace Rock.Reporting.DataFilter
 
                         if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
                         {
-                            TimeSpan timeValue = values[1].AsTimeSpan() ?? TimeSpan.MinValue;
+                            // convert the timespan to a time on 01-01-1900 to match how ValueAsDateTime returns Time values
+                            DateTime timeValue = new DateTime( 1900, 1, 1 );
+                            var timeSpan = values[1].AsTimeSpan();
+                            if (timeSpan.HasValue)
+                            {
+                                timeValue = timeValue.Add( timeSpan.Value );
+                            }
+                            
                             switch ( comparisonType )
                             {
                                 case ComparisonType.EqualTo:
-                                case ComparisonType.NotEqualTo:
-                                    ids = attributeValues.Where( v => timeValue.CompareTo( v.Value.AsTimeSpan() ) == 0 ).Select( v => v.EntityId.Value );
+                                case ComparisonType.NotEqualTo: 
+                                    // NOTE: EqualTo and NotEqualTo do the same thing because the "Not" part is taken care of later when the expression is built
+                                    ids = attributeValues.Where( v => v.ValueAsDateTime == timeValue).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.GreaterThan:
-                                    ids = attributeValues.Where( v => timeValue.CompareTo( v.Value.AsTimeSpan() ) <= 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsDateTime > timeValue ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.GreaterThanOrEqualTo:
-                                    ids = attributeValues.Where( v => timeValue.CompareTo( v.Value.AsTimeSpan() ) < 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsDateTime >= timeValue ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.LessThan:
-                                    ids = attributeValues.Where( v => timeValue.CompareTo( v.Value.AsTimeSpan() ) >= 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsDateTime < timeValue ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.LessThanOrEqualTo:
-                                    ids = attributeValues.Where( v => timeValue.CompareTo( v.Value.AsTimeSpan() ) > 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsDateTime <= timeValue ).Select( v => v.EntityId.Value );
                                     break;
                             }
                         }
@@ -692,24 +765,25 @@ namespace Rock.Reporting.DataFilter
 
                         if ( !( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType ) )
                         {
-                            double numericValue = values[1].AsDoubleOrNull() ?? int.MinValue;
+                            decimal numericValue = values[1].AsDecimalOrNull() ?? decimal.MinValue;
                             switch ( comparisonType )
                             {
                                 case ComparisonType.EqualTo:
                                 case ComparisonType.NotEqualTo:
-                                    ids = attributeValues.Where( v => numericValue.CompareTo( v.Value.AsDouble() ) == 0 ).Select( v => v.EntityId.Value );
+                                    // NOTE: EqualTo and NotEqualTo do the same thing because the "Not" part is taken care of later when the expression is built
+                                    ids = attributeValues.Where( v => v.ValueAsNumeric == numericValue ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.GreaterThan:
-                                    ids = attributeValues.Where( v => numericValue.CompareTo( v.Value.AsDouble() ) <= 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsNumeric > numericValue ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.GreaterThanOrEqualTo:
-                                    ids = attributeValues.Where( v => numericValue.CompareTo( v.Value.AsDouble() ) < 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsNumeric >= numericValue ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.LessThan:
-                                    ids = attributeValues.Where( v => numericValue.CompareTo( v.Value.AsDouble() ) >= 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsNumeric < numericValue ).Select( v => v.EntityId.Value );
                                     break;
                                 case ComparisonType.LessThanOrEqualTo:
-                                    ids = attributeValues.Where( v => numericValue.CompareTo( v.Value.AsDouble() ) > 0 ).Select( v => v.EntityId.Value );
+                                    ids = attributeValues.Where( v => v.ValueAsNumeric <= numericValue ).Select( v => v.EntityId.Value );
                                     break;
                             }
                         }
@@ -726,26 +800,30 @@ namespace Rock.Reporting.DataFilter
                     if ( values.Count == 2 )
                     {
                         comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                        string compareValue = values[1];
 
                         switch ( comparisonType )
                         {
                             case ComparisonType.Contains:
                             case ComparisonType.DoesNotContain:
-                                ids = attributeValues.Where( v => v.Value.ToUpper().Contains( values[1].ToUpper() ) ).Select( v => v.EntityId.Value );
+                                // NOTE: EqualTo and NotEqualTo do the same thing because the "Not" part is taken care of later when the expression is built
+                                ids = attributeValues.Where( v => v.Value.Contains( compareValue ) ).Select( v => v.EntityId.Value );
                                 break;
                             case ComparisonType.EqualTo:
                             case ComparisonType.NotEqualTo:
-                                ids = attributeValues.Where( v => v.Value.Equals( values[1], StringComparison.CurrentCultureIgnoreCase ) ).Select( v => v.EntityId.Value );
+                                // NOTE: EqualTo and NotEqualTo do the same thing because the "Not" part is taken care of later when the expression is built
+                                ids = attributeValues.Where( v => v.Value.Equals( compareValue ) ).Select( v => v.EntityId.Value );
                                 break;
                             case ComparisonType.IsBlank:
                             case ComparisonType.IsNotBlank:
+                                // NOTE: EqualTo and NotEqualTo do the same thing because the "Not" part is taken care of later when the expression is built
                                 ids = attributeValues.Select( v => v.EntityId.Value );
                                 break;
                             case ComparisonType.StartsWith:
-                                ids = attributeValues.Where( v => v.Value.StartsWith( values[1], StringComparison.CurrentCultureIgnoreCase ) ).Select( v => v.EntityId.Value );
+                                ids = attributeValues.Where( v => v.Value.StartsWith( compareValue ) ).Select( v => v.EntityId.Value );
                                 break;
                             case ComparisonType.EndsWith:
-                                ids = attributeValues.Where( v => v.Value.EndsWith( values[1], StringComparison.CurrentCultureIgnoreCase ) ).Select( v => v.EntityId.Value );
+                                ids = attributeValues.Where( v => v.Value.EndsWith( compareValue ) ).Select( v => v.EntityId.Value );
                                 break;
                         }
                     }
@@ -757,7 +835,8 @@ namespace Rock.Reporting.DataFilter
 
                     if ( values.Count == 1 )
                     {
-                        ids = attributeValues.Where( v => v.Value == values[0] ).Select( v => v.EntityId.Value );
+                        string compareValue = values[0];
+                        ids = attributeValues.Where( v => v.Value == compareValue ).Select( v => v.EntityId.Value );
                     }
 
                     break;
@@ -766,8 +845,18 @@ namespace Rock.Reporting.DataFilter
 
                     if ( values.Count == 1 )
                     {
-                        List<string> selectedValues = JsonConvert.DeserializeObject<List<string>>( values[0] );
-                        ids = attributeValues.Where( v => selectedValues.Contains( v.Value ) ).Select( v => v.EntityId.Value );
+                        List<string> compareValues = JsonConvert.DeserializeObject<List<string>>( values[0] );
+                        foreach (var compareValue in compareValues)
+                        {
+                            if (ids == null)
+                            {
+                                ids = attributeValues.Where( v => ( "," + v.Value + "," ).Contains( "," + compareValue + "," ) ).Select( v => v.EntityId.Value );
+                            }
+                            else
+                            {
+                                ids = ids.Union(attributeValues.Where( v => ( "," + v.Value + "," ).Contains( "," + compareValue + "," ) ).Select( v => v.EntityId.Value ));
+                            }
+                        }
                     }
 
                     break;

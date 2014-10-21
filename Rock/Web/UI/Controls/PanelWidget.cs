@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -55,12 +56,12 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _hfTitle.Value;
+                return HttpUtility.HtmlDecode( _hfTitle.Value );
             }
             set
             {
                 EnsureChildControls();
-                _hfTitle.Value = value;
+                _hfTitle.Value = HttpUtility.HtmlEncode( value );
             }
         }
 
@@ -81,8 +82,8 @@ namespace Rock.Web.UI.Controls
             {
                 ViewState["TitleIconCssClass"] = value;
             }
-        }        
-        
+        }
+
         /// <summary>
         /// Gets or sets a value indicating whether [show reorder icon].
         /// </summary>
@@ -289,9 +290,9 @@ $('.js-stop-immediate-propagation').click(function (event) {
                 }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                
+
                 // Title
-                if (!string.IsNullOrWhiteSpace(TitleIconCssClass))
+                if ( !string.IsNullOrWhiteSpace( TitleIconCssClass ) )
                 {
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, TitleIconCssClass );
                     writer.RenderBeginTag( HtmlTextWriterTag.I );
@@ -299,8 +300,8 @@ $('.js-stop-immediate-propagation').click(function (event) {
                     writer.Write( " " );
                 }
 
-                // also write out the value of the hidden field as the title
-                writer.Write( _hfTitle.Value );
+                // also write out the title (also stored in _hfTitle.value)
+                writer.Write( Title );
 
                 writer.RenderEndTag();
 

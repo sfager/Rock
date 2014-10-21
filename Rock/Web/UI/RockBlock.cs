@@ -70,6 +70,17 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Gets the name of the block.
+        /// </summary>
+        /// <value>
+        /// The name of the block.
+        /// </value>
+        public string BlockName
+        {
+            get { return _blockCache.Name; }
+        }
+
+        /// <summary>
         /// Gets the current page reference.
         /// </summary>
         public PageReference CurrentPageReference
@@ -741,11 +752,19 @@ namespace Rock.Web.UI
                     }
                 }
 
-                var pageReference = new PageReference( pageCache.Id, routeId, queryString, null );
-                string pageUrl = pageReference.BuildUrl();
-                Response.Redirect( pageUrl, false );
-                Context.ApplicationInstance.CompleteRequest();
+                NavigateToPage( new PageReference( pageCache.Id, routeId, queryString, null ) );
             }
+        }
+
+        /// <summary>
+        /// Navigates to page.
+        /// </summary>
+        /// <param name="pageReference">The page reference.</param>
+        public void NavigateToPage( PageReference pageReference )
+        {
+            string pageUrl = pageReference.BuildUrl();
+            Response.Redirect( pageUrl, false );
+            Context.ApplicationInstance.CompleteRequest();
         }
 
         /// <summary>

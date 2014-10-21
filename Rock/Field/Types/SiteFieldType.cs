@@ -26,11 +26,12 @@ namespace Rock.Field.Types
 {
     /// <summary>
     /// Field Type to select a single (or null) SiteFieldType
+    /// Stored as Site.Id
     /// </summary>
     public class SiteFieldType : FieldType, IEntityFieldType
     {
         /// <summary>
-        /// Creates the control(s) neccessary for prompting user for a new value
+        /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id"></param>
@@ -40,6 +41,7 @@ namespace Rock.Field.Types
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var editControl = new RockDropDownList { ID = id };
+            editControl.Items.Add( new ListItem() );
 
             SiteService siteService = new SiteService( new RockContext() );
             var siteList = siteService.Queryable().OrderBy( a => a.Name ).ToList();

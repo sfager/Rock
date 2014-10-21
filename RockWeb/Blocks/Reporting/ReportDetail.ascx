@@ -34,11 +34,14 @@
                             <Rock:EntityTypePicker ID="etpEntityType" runat="server" Label="Applies To" Required="true" AutoPostBack="true" OnSelectedIndexChanged="etpEntityType_SelectedIndexChanged"/>
                             <Rock:RockDropDownList ID="ddlDataView" runat="server" Label="Data View" Required="false" />
                         </div>
+                        <div class="col-md-6">
+                            <Rock:KeyValueList ID="kvSortFields" runat="server" Label="Sorting" />
+                        </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:NumberBox ID="nbFetchTop" runat="server" NumberType="Integer" Required="false" SourceTypeName="Rock.Model.Report, Rock" PropertyName="FetchTop" Label="Resulting Row Limit" MinimumValue="0" MaxLength="9"
+                            <Rock:NumberBox ID="nbFetchTop" runat="server" NumberType="Integer" Required="false" Label="Resulting Row Limit" MinimumValue="0" MaxLength="9"
                                 Help="Limits the number of rows returned in the report. Leave blank to show all rows." />
                         </div>
                         <div class="col-md-6">
@@ -128,16 +131,36 @@
                     }
                 });
 
+                function htmlEncode(value) {
+                    // from http://stackoverflow.com/questions/1219860/html-encoding-in-javascript-jquery
+                    // create a in-memory div, set it's inner text(which jQuery automatically encodes)
+                    // then grab the encoded contents back out.  The div never exists on the page.
+                    return $('<div/>').text(value).html();
+                }
+
+
                 // javascript to set the widget panel title based on the defined column header text when collapsed
                 $('.panel-widget .panel-heading').on('click', function (e, data) {
                     if ($(this).find('.fa-chevron-down').length) {
                         var title = $(this).closest('section').find('.js-column-header-textbox').val();
+                        var reportFieldGuid = $(this).closest('section').find('.js-report-field-guid').val();
 
                         // set hidden value of title
-                        $(this).find('.js-header-title-hidden').val(title);
+                        $(this).find('.js-header-title-hidden').val(htmlEncode(title));
 
                         // set displayed text of title
                         $(this).find('.js-header-title').text(title);
+                        
+                        // update displayed sorting field names to match updated title
+                        var $kvSortFields = $('#<%=kvSortFields.ClientID %>');
+                        $kvSortFields.find('.key-value-key').find('option[value="' + reportFieldGuid + '"]').text(title);
+
+                        // update the HTML for when the next sorting field is added
+                        var valueHtml = $kvSortFields.find('.js-value-html').val();
+                        var $fakeDiv = $('<div/>').append(valueHtml);
+                        $fakeDiv.find('.key-value-key').find('option[value="' + reportFieldGuid + '"]').text(title);
+                        var updatedValueHtml = $fakeDiv.html();
+                        $kvSortFields.find('.js-value-html').val(updatedValueHtml);
                     }
                 })
 

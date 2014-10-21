@@ -131,8 +131,8 @@ namespace Rock.Communication.Transport
 
                 var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
 
-                string fromAddress = communication.GetChannelDataValue( "FromAddress" );
-                string replyTo = communication.GetChannelDataValue( "ReplyTo" );
+                string fromAddress = communication.GetMediumDataValue( "FromAddress" );
+                string replyTo = communication.GetMediumDataValue( "ReplyTo" );
 
                 // Check to make sure sending domain is a safe sender
                 var safeDomains = DefinedTypeCache.Read( SystemGuid.DefinedType.COMMUNICATION_SAFE_SENDER_DOMAINS.AsGuid() ).DefinedValues.Select( v => v.Value ).ToList();
@@ -150,7 +150,7 @@ namespace Rock.Communication.Transport
                 MailMessage message = new MailMessage();
                 message.From = new MailAddress(
                     fromAddress,
-                    communication.GetChannelDataValue( "FromName" ) );
+                    communication.GetMediumDataValue( "FromName" ) );
 
                 // Reply To
                 if ( !string.IsNullOrWhiteSpace( replyTo ) )
@@ -159,7 +159,7 @@ namespace Rock.Communication.Transport
                 }
 
                 // CC
-                string cc = communication.GetChannelDataValue( "CC" );
+                string cc = communication.GetMediumDataValue( "CC" );
                 if ( !string.IsNullOrWhiteSpace( cc ) )
                 {
                     foreach ( string ccRecipient in cc.SplitDelimitedValues() )
@@ -169,7 +169,7 @@ namespace Rock.Communication.Transport
                 }
 
                 // BCC
-                string bcc = communication.GetChannelDataValue( "BCC" );
+                string bcc = communication.GetMediumDataValue( "BCC" );
                 if ( !string.IsNullOrWhiteSpace( bcc ) )
                 {
                     foreach ( string bccRecipient in bcc.SplitDelimitedValues() )
@@ -184,7 +184,7 @@ namespace Rock.Communication.Transport
                 var smtpClient = GetSmtpClient();
 
                 // Add Attachments
-                string attachmentIds = communication.GetChannelDataValue( "Attachments" );
+                string attachmentIds = communication.GetMediumDataValue( "Attachments" );
                 if ( !string.IsNullOrWhiteSpace( attachmentIds ) )
                 {
                     var binaryFileService = new BinaryFileService( rockContext );
@@ -204,7 +204,12 @@ namespace Rock.Communication.Transport
                     }
                 }
 
+                var historyService = new HistoryService( rockContext );
                 var recipientService = new CommunicationRecipientService( rockContext );
+
+                var personEntityTypeId = EntityTypeCache.Read("Rock.Model.Person").Id;
+                var communicationEntityTypeId = EntityTypeCache.Read("Rock.Model.Communication" ).Id;
+                var communicationCategoryId = CategoryCache.Read( Rock.SystemGuid.Category.HISTORY_PERSON_COMMUNICATIONS.AsGuid(), rockContext).Id;
 
                 var globalConfigValues = Rock.Web.Cache.GlobalAttributesCache.GetMergeFields( null );
                 
@@ -237,18 +242,18 @@ namespace Rock.Communication.Transport
                             AddAdditionalHeaders( message, recipient );
 
                             // Add text view first as last view is usually treated as the preferred view by email readers (gmail)
-                            string plainTextBody = Rock.Communication.Channel.Email.ProcessTextBody( communication, globalAttributes, mergeObjects );
+                            string plainTextBody = Rock.Communication.Medium.Email.ProcessTextBody( communication, globalAttributes, mergeObjects );
                             if ( !string.IsNullOrWhiteSpace( plainTextBody ) )
                             {
-                                AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainTextBody, new ContentType( MediaTypeNames.Text.Plain ) );
+                                AlternateView plainTextView = AlternateView.CreateAlternateViewFromString( plainTextBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Plain ) );
                                 message.AlternateViews.Add( plainTextView );
                             }
 
                             // Add Html view
-                            string htmlBody = Rock.Communication.Channel.Email.ProcessHtmlBody( communication, globalAttributes, mergeObjects );
+                            string htmlBody = Rock.Communication.Medium.Email.ProcessHtmlBody( communication, globalAttributes, mergeObjects );
                             if ( !string.IsNullOrWhiteSpace( htmlBody ) )
                             {
-                                AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new ContentType( MediaTypeNames.Text.Html ) );
+                                AlternateView htmlView = AlternateView.CreateAlternateViewFromString( htmlBody, new System.Net.Mime.ContentType( MediaTypeNames.Text.Html ) );
                                 message.AlternateViews.Add( htmlView );
                             }
 
@@ -264,7 +269,20 @@ namespace Rock.Communication.Transport
                                 }
 
                                 recipient.TransportEntityTypeName = this.GetType().FullName;
+
+                                historyService.Add( new History
+                                {
+                                    CreatedByPersonAliasId = communication.SenderPersonAliasId,
+                                    EntityTypeId = personEntityTypeId,
+                                    CategoryId = communicationCategoryId,
+                                    EntityId = recipient.PersonAlias.PersonId,
+                                    Summary = string.Format( "Sent communication from <span class='field-value'>{0}</span>.", message.From.DisplayName ),
+                                    Caption = message.Subject, 
+                                    RelatedEntityTypeId = communicationEntityTypeId,
+                                    RelatedEntityId = communication.Id
+                                } );
                             }
+
                             catch ( Exception ex )
                             {
                                 recipient.Status = CommunicationRecipientStatus.Failed;
@@ -384,13 +402,13 @@ namespace Rock.Communication.Transport
         }
 
         /// <summary>
-        /// Sends the specified channel data to the specified list of recipients.
+        /// Sends the specified medium data to the specified list of recipients.
         /// </summary>
-        /// <param name="channelData">The channel data.</param>
+        /// <param name="mediumData">The medium data.</param>
         /// <param name="recipients">The recipients.</param>
         /// <param name="appRoot">The application root.</param>
         /// <param name="themeRoot">The theme root.</param>
-        public override void Send(Dictionary<string, string> channelData, List<string> recipients, string appRoot, string themeRoot)
+        public override void Send(Dictionary<string, string> mediumData, List<string> recipients, string appRoot, string themeRoot)
         {
             try
             {
@@ -398,7 +416,7 @@ namespace Rock.Communication.Transport
 
                 string from = string.Empty;
                 string fromName = string.Empty;
-                channelData.TryGetValue( "From", out from );
+                mediumData.TryGetValue( "From", out from );
 
                 if ( string.IsNullOrWhiteSpace( from ) )
                 {
@@ -425,10 +443,10 @@ namespace Rock.Communication.Transport
                     var smtpClient = GetSmtpClient();
 
                     string subject = string.Empty;
-                    channelData.TryGetValue( "Subject", out subject );
+                    mediumData.TryGetValue( "Subject", out subject );
 
                     string body = string.Empty;
-                    channelData.TryGetValue( "Body", out body );
+                    mediumData.TryGetValue( "Body", out body );
 
                     message.To.Clear();
                     recipients.ForEach( r => message.To.Add( r ) );

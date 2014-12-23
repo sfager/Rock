@@ -158,6 +158,7 @@ namespace Rock.Web.UI.Controls.Communication
             this.AdditionalMergeFields.ForEach( m => htmlMessage.MergeFields.Add( m ) );
             htmlMessage.Label = "Message";
             htmlMessage.Height = 600;
+            htmlMessage.FullPage = true;
             Controls.Add( htmlMessage );
 
             tbTextMessage = new RockTextBox();

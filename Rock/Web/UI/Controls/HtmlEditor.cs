@@ -331,6 +331,28 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+
+        /// <summary>
+        /// (from http://docs.ckeditor.com/#!/api/CKEDITOR.config-cfg-fullPage)
+        /// Indicates whether the contents to be edited are being input as a full HTML page. 
+        /// A full page includes the <html>, <head>, and <body> elements. 
+        /// The final output will also reflect this setting, including the <body> contents only if this setting is disabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [full page]; otherwise, <c>false</c>.
+        /// </value>
+        public bool FullPage
+        {
+            get
+            {
+                return ViewState["FullPage"] as bool? ?? false;
+            }
+            set
+            {
+                ViewState["FullPage"] = value;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the merge fields to make available.  This should include either a list of
         /// entity type names (full name), or other non-object string values
@@ -479,11 +501,12 @@ CKEDITOR.replace('{0}', {{
     htmlEncodeOutput: true,
     extraPlugins: '{5}',
     resize_maxWidth: '{3}',
+    fullPage: {13},
     rockFileBrowserOptions: {{ 
-    documentFolderRoot: '{6}', 
-    imageFolderRoot: '{7}',
-    imageFileTypeWhiteList: '{8}',
-    fileTypeBlackList: '{9}'
+        documentFolderRoot: '{6}', 
+        imageFolderRoot: '{7}',
+        imageFileTypeWhiteList: '{8}',
+        fileTypeBlackList: '{9}',
     }},
     rockMergeFieldOptions: {{ mergeFields: '{10}' }},
     on : {{
@@ -586,7 +609,8 @@ CKEDITOR.replace('{0}', {{
                 fileTypeBlackList,                                              // {9}
                 this.MergeFields.AsDelimited( "," ),                            // {10}
                 this.AdditionalConfigurations,                                  // {11}
-                ckEditorLib );                                                  // {12}
+                ckEditorLib,                                                    // {12} 
+                this.FullPage.ToTrueFalse().ToLower() );                        // {13}                         
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "ckeditor_init_script_" + this.ClientID, ckeditorInitScript, true );
 
